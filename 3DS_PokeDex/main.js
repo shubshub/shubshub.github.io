@@ -2,9 +2,10 @@ var mouseX;
 var mouseY;
 var canvasBottom = document.getElementById("PokeDex_3DS_Bottom");
 var canvasTop = document.getElementById("PokeDex_3DS_Top");
-var version = "0.5";
-var versionNum = 5;
+var version = "0.6";
+var versionNum = 6;
 //alert(navigator.appVersion);
+
 window.setInterval(function () {
     window.scrollTo(0, 265);  
 }, 50);
@@ -55,6 +56,7 @@ function getPosition(event) {
 	checkButtonClick(mpoButton,6);
 	checkButtonClick(changelogButton,7);
 	checkButtonClick(aboutButton,8);
+	checkButtonClick(creditsButton,9);
 }
 function checkButtonClick(thisButton,buttonType)
 {
@@ -78,6 +80,7 @@ function checkButtonClick(thisButton,buttonType)
 	6: MPO Download Button
 	7: Changelog Button
 	8: About Button
+	9: Credits Button
 	*/
 	switch(buttonType)
 	{
@@ -97,8 +100,8 @@ function checkButtonClick(thisButton,buttonType)
 			showState('dropdown_unova');
 			break;
 		case 5:
-			alert("Still waiting on Kalos Sprites");
-			//showState('dropdown_kalos');
+			//alert("Not yet Ready");
+			showState('dropdown_kalos');
 			break;
 		case 6:
 			window.open(document.getElementById('mpo_download').href);
@@ -108,6 +111,9 @@ function checkButtonClick(thisButton,buttonType)
 			break;
 		case 8:
 			showAbout();
+			break;
+		case 9:
+			showCredits();
 			break;
 		default:
 			alert("Something went wrong =/");
@@ -129,6 +135,14 @@ function showAbout()
 {
 	alert("Web Pokedex Version "+version+"\nJanuary 2016 - Present\nDeveloped by Shubshub\nWe are not affiliated with Nintendo or The Pokemon Company\nAll Pokemon Images and 3D Models are Copyrighted images owned by The Pokemon Company");
 }
+function showCredits()
+{
+	alert("Web Pokedex Credits");
+	alert("Programming\nShubshub");
+	alert("Bug Testing\\UI Design\nElyosOfTheAbyss");
+	alert("Kalos Pokemon Sprites\nSerebii\nhttp://www.serebii.net/")
+}
+
 
 function showChangelog()
 {
@@ -141,6 +155,7 @@ function showChangelog()
 	changelogText[2] = "v0.3 - Stats are now displayed on Top Screen";
 	changelogText[3] = "v0.4 - All Base Stats have been Added and Display Correctly\nThanks to pokeapi.co for the JSON Data";
 	changelogText[4] = "v0.5 - Minor Stability Update: Changed Image Links to short form for when Website changes Location things don't break\nAdded all Unova Region Pokemon\nStable enough to stand on without falling off while Sober";
+	changelogText[5] = "v0.6 - All Kalos Pokemon added except Hoopa, Diancie and Volcanion\nAwesome Looking User Interface Courtesy of ElyosOfTheAbyss\nOther Minor Bug Fixes\nStable enough to balance a fork on now\nWe Apologize for the Slow Loading Times not much we can do";
 	//Changelog End
 	
 	
@@ -161,41 +176,58 @@ function showChangelog()
 	}
 	
 }
+function bottomUIhandler()
+{
+	var bottomUI = new Image();
+	var bottomContext = canvasBottom.getContext('2d');
+	bottomUI.onload = function()
+	{
+		bottomContext.drawImage(bottomUI,0,0);
+		buttonPlace(kantoButton)
+		buttonPlace(johtoButton);
+		buttonPlace(hoennButton);
+		buttonPlace(sinnohButton);
+		buttonPlace(unovaButton);
+		buttonPlace(kalosButton);
+		buttonPlace(mpoButton);
+		buttonPlace(changelogButton);
+		buttonPlace(aboutButton);
+		buttonPlace(creditsButton);
+	}
+	bottomUI.src = './images/bottomUI.png';
+	
+
+}
 var ctx = canvasBottom.getContext("2d");
-ctx.font = "15px Arial";
+/*ctx.font = "15px Arial";
 ctx.fillText("Developed by Shubshub",5,12);
 ctx.fillText("Using HTML5 Canvas",5,25);
 ctx.fillText("Features to Come",5,90);
 ctx.fillText(" - Downloadable 3D MPO Images",5, 105);
 ctx.fillText(" - A nice User Interface",5, 120);
-ctx.fillText(" - Actual Stats by Level with EV & IV input", 5, 135);
+ctx.fillText(" - Actual Stats by Level with EV & IV input", 5, 135);*/
 
 //All the Buttons must be Instantiated here
-var kantoButton = new Button(20,56,48,16,'./images/clickButton.png');
-var johtoButton = new Button(68,56,48,16,'./images/Johot.png');
-var hoennButton = new Button(116,56,48,16,'./images/Hoenn.png');
-var sinnohButton = new Button(164,56,50,16,'./images/Sinnoh.png');
-var unovaButton = new Button(214,56,48,16,'./images/Unova.png');
-var kalosButton = new Button(262,56,48,16,'./images/Kalos.png');
-var mpoButton = new Button(355,225,48,16,'./images/mpo_download.png');
+var kantoButton = new Button(7,59,64,24,'./images/clickButton.png');
+var johtoButton = new Button(71,59,64,24,'./images/Johot.png');
+var hoennButton = new Button(135,59,64,24,'./images/Hoenn.png');
+var sinnohButton = new Button(199,59,64,24,'./images/Sinnoh.png');
+var unovaButton = new Button(263,59,64,24,'./images/Unova.png');
+var kalosButton = new Button(327,59,64,24,'./images/Kalos.png');
+var mpoButton = new Button(352,225,48,16,'./images/mpo_download.png');
 var changelogButton = new Button(0,225,128,16,'./images/changelog.png');
 var aboutButton = new Button(0,207,128,16,'./images/about.png');
+var creditsButton = new Button(0,189,128,16,'./images/credits.png');
 
-buttonPlace(kantoButton)
-buttonPlace(johtoButton);
-buttonPlace(hoennButton);
-buttonPlace(sinnohButton);
-buttonPlace(unovaButton);
-buttonPlace(kalosButton);
-buttonPlace(mpoButton);
-buttonPlace(changelogButton);
-buttonPlace(aboutButton);
+bottomUIhandler();
+
 
 var ctx_Top = canvasTop.getContext("2d");
-ctx_Top.font = "30px Arial";
-ctx_Top.fillText("3DS - Web Pokedex v"+version,10,30);
-ctx_Top.rect(20,40,96,96);
-ctx_Top.rect(127,40,260,155);
+DrawUI();
+//ctx_Top.font = "30px Arial";
+//ctx_Top.fillText("3DS - Web Pokedex v"+version,10,30);
+//ctx_Top.rect(15,77,96,96);
+//ctx_Top.rect(127,77,260,155);
 ctx_Top.stroke();
 ctx_Top.stroke();
 function DrawStatWord()
@@ -212,42 +244,63 @@ function DrawStatWord()
 function DrawStatWord_Stats(value)
 {
 	ctx_Top.font = "15px Arial";
-	ctx_Top.fillText("Base Stats",129,60);
-	ctx_Top.fillText("Health: ",129,80);
-	ctx_Top.fillText("Attack: ",129,100);
-	ctx_Top.fillText("Defense: ",129,120);
-	ctx_Top.fillText("Sp. Attack: ",129,140);
-	ctx_Top.fillText("Sp. Defense: ",129,160);
-	ctx_Top.fillText("Speed: ",129,180);
+	
+	/*ctx_Top.fillText("Base Stats",132,97);
+	ctx_Top.fillText("Health:      ",132,117);
+	ctx_Top.fillText("Attack:      ",132,137);
+	ctx_Top.fillText("Defense:     ",132,157);
+	ctx_Top.fillText("Sp. Attack:  ",132,177);
+	ctx_Top.fillText("Sp. Defense: ",132,197);
+	ctx_Top.fillText("Speed: ",132,217);*/
 	getStats(value);
 }
-DrawStatWord();
+function DrawUI(value)
+{
+	//This function handles everything to do with the User Interface on the Top Screen
+	topCanvasCTX = canvasTop.getContext('2d');
+	bottomCanvasCTX = canvasBottom.getContext('2d');
+	
+	var use = value
+	var imageObj = new Image();
+	var topCanvasUI = new Image();
+	var bottomCanvasUI = new Image();
+	topCanvasUI.onload = function()
+	{
+		topCanvasCTX.clearRect(0,0,canvasTop.width,canvasTop.height);
+		topCanvasCTX.drawImage(topCanvasUI,0,0);
+		ctx_Top.font = "20px Arial";
+		ctx_Top.fillStyle = 'white';
+		ctx_Top.fillText("Web Pokedex v"+version,10,25);
+		
+		
+		//var context = canvasTop.getContext('2d');
+		
+		ctx_Top.stroke();
+		ctx_Top.stroke();
+		document.getElementById("mpo_download").href = './images/mpo/'+use+'.mpo';
+		
+		imageObj.onload = function() 
+		{
+			topCanvasCTX.drawImage(imageObj, 15, 77,96,96);
+		};
+		ctx_Top.fillStyle = 'black';
+		DrawStatWord_Stats(use);
+		
+	}
+	
+	topCanvasUI.src = './images/TopUI.png'
+	imageObj.src = './images/pokemon/'+value+'.png';
+}
 function updatePokemon(elementId)
 {
 	var e = document.getElementById(elementId);
 	var value = e.options[e.selectedIndex].value;
 	var text = e.options[e.selectedIndex].text;
-	ctx_Top.clearRect(0,0,canvasTop.width,canvasTop.height);
-	ctx_Top.font = "30px Arial";
-	ctx_Top.fillText("3DS - Web Pokedex v"+version,10,30);
-	DrawStatWord_Stats(value);
-	var context = canvasTop.getContext('2d');
-	var imageObj = new Image();
-	//var testSize = new Image();
-	//ctx_Top.rect(20,40,100,100);
-	ctx_Top.stroke();
-	ctx_Top.stroke();
-	document.getElementById("mpo_download").href = './images/mpo/'+value+'.mpo';
-	/*var ctx_Bot = canvasBottom.getContext('2d');
-	testSize.onload = function()
-	{
-		ctx_Bot.drawImage(testSize,0,0);
-	};*/
 	
-	imageObj.onload = function() 
-	{
-		context.drawImage(imageObj, 20, 40);
-	};
-    imageObj.src = './images/pokemon/'+value+'.png';
+	DrawUI(value);
+	
+	
+
+	//testSize.src = 'https://dl.dropboxusercontent.com/u/35400026/3DS_PokeDex/images/ScreenSizeTest.png';
 }
 

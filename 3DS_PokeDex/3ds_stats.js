@@ -17,19 +17,19 @@ function getStats(pokedex)
 }
 function dataReady()
 {
-	ctx_Top.clearRect(0,0,canvasTop.width,canvasTop.height);
-	ctx_Top.font = "30px Arial";
-	ctx_Top.fillText("3DS - Web Pokedex v"+version,10,30);
+	//ctx_Top.clearRect(0,0,canvasTop.width,canvasTop.height);
+	
 	ctx_Top.font = "15px Arial";
-	ctx_Top.fillText("Base Stats",129,60);
-	ctx_Top.fillText("Health: "+statsArray[0],129,80);
-	ctx_Top.fillText("Attack: "+statsArray[1],129,100);
-	ctx_Top.fillText("Defense: "+statsArray[2],129,120);
-	ctx_Top.fillText("Sp. Attack: "+statsArray[3],129,140);
-	ctx_Top.fillText("Sp. Defense: "+statsArray[4],129,160);
-	ctx_Top.fillText("Speed: "+statsArray[5],129,180);
+	ctx_Top.fillStyle = "white";
+	ctx_Top.fillText(statsArray[0],230,122); //Health
+	ctx_Top.fillText(statsArray[1],230,137); //Attack
+	ctx_Top.fillText(statsArray[2],230,154); //Defense
+	ctx_Top.fillText(statsArray[3],230,170); //Sp. Atk
+	ctx_Top.fillText(statsArray[4],230,186); //Sp. Def
+	ctx_Top.fillText(statsArray[5],230,203); //Speed
 	ctx_Top.stroke();
 	ctx_Top.stroke();
+	ctx_Top.fillStyle = "black";
 }
 function BaseToActual_HP(BaseHP, IV, EV, level)
 {

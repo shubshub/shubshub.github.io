@@ -1,4 +1,4 @@
-var debug = 0
+var debug = 1
 var new_3ds_check = 1;
 if (debug !=1)
 {
