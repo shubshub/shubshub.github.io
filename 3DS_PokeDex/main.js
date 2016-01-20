@@ -133,11 +133,11 @@ window.showState = function (elementId) {
 
 function showAbout()
 {
-	alert("Web Pokedex Version "+version+"\nJanuary 2016 - Present\nDeveloped by Shubshub\nWe are not affiliated with Nintendo or The Pokemon Company\nAll Pokemon Images and 3D Models are Copyrighted images owned by The Pokemon Company");
+	alert("Web Pokédex Version "+version+"\nJanuary 2016 - Present\nDeveloped by Shubshub\nWe are not affiliated with Nintendo or The Pokemon Company\nAll Pokemon Images and 3D Models are Copyrighted images owned by The Pokemon Company");
 }
 function showCredits()
 {
-	alert("Web Pokedex Credits");
+	alert("Web Pokédex Credits");
 	alert("Programming\nShubshub");
 	alert("Bug Testing\\UI Design\nElyosOfTheAbyss");
 	alert("Kalos Pokemon Sprites\nSerebii\nhttp://www.serebii.net/")
@@ -199,13 +199,6 @@ function bottomUIhandler()
 
 }
 var ctx = canvasBottom.getContext("2d");
-/*ctx.font = "15px Arial";
-ctx.fillText("Developed by Shubshub",5,12);
-ctx.fillText("Using HTML5 Canvas",5,25);
-ctx.fillText("Features to Come",5,90);
-ctx.fillText(" - Downloadable 3D MPO Images",5, 105);
-ctx.fillText(" - A nice User Interface",5, 120);
-ctx.fillText(" - Actual Stats by Level with EV & IV input", 5, 135);*/
 
 //All the Buttons must be Instantiated here
 var kantoButton = new Button(7,59,64,24,'./images/clickButton.png');
@@ -224,10 +217,6 @@ bottomUIhandler();
 
 var ctx_Top = canvasTop.getContext("2d");
 DrawUI();
-//ctx_Top.font = "30px Arial";
-//ctx_Top.fillText("3DS - Web Pokedex v"+version,10,30);
-//ctx_Top.rect(15,77,96,96);
-//ctx_Top.rect(127,77,260,155);
 ctx_Top.stroke();
 ctx_Top.stroke();
 function DrawStatWord()
@@ -244,14 +233,6 @@ function DrawStatWord()
 function DrawStatWord_Stats(value)
 {
 	ctx_Top.font = "15px Arial";
-	
-	/*ctx_Top.fillText("Base Stats",132,97);
-	ctx_Top.fillText("Health:      ",132,117);
-	ctx_Top.fillText("Attack:      ",132,137);
-	ctx_Top.fillText("Defense:     ",132,157);
-	ctx_Top.fillText("Sp. Attack:  ",132,177);
-	ctx_Top.fillText("Sp. Defense: ",132,197);
-	ctx_Top.fillText("Speed: ",132,217);*/
 	getStats(value);
 }
 function DrawUI(value)
@@ -270,10 +251,7 @@ function DrawUI(value)
 		topCanvasCTX.drawImage(topCanvasUI,0,0);
 		ctx_Top.font = "20px Arial";
 		ctx_Top.fillStyle = 'white';
-		ctx_Top.fillText("Web Pokedex v"+version,10,25);
-		
-		
-		//var context = canvasTop.getContext('2d');
+		ctx_Top.fillText("Web Pokédex v"+version,10,25);
 		
 		ctx_Top.stroke();
 		ctx_Top.stroke();
@@ -298,9 +276,5 @@ function updatePokemon(elementId)
 	var text = e.options[e.selectedIndex].text;
 	
 	DrawUI(value);
-	
-	
-
-	//testSize.src = 'https://dl.dropboxusercontent.com/u/35400026/3DS_PokeDex/images/ScreenSizeTest.png';
 }
 
