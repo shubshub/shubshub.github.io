@@ -249,6 +249,5 @@ function updatePokemon(elementId)
 		context.drawImage(imageObj, 20, 40);
 	};
     imageObj.src = './images/pokemon/'+value+'.png';
-	//testSize.src = 'https://dl.dropboxusercontent.com/u/35400026/3DS_PokeDex/images/ScreenSizeTest.png';
 }
 
