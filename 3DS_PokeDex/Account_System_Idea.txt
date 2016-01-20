@@ -1,0 +1,7 @@
+Users can create an account that would be tied to only their 3DS Browser on their System
+Users can change and save settings to their liking
+
+This would all be stored as Cookies
+
+
+Users can then Transfer their accounts to another System by using a QR Code?
