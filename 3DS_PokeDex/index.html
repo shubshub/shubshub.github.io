@@ -2,13 +2,14 @@
 <html>
   <head>
   <title>Nintendo 3DS - Web Pokédex</title>
+  <script>document.body.scrollTop = 0;</script>
   <script src="./not_3ds_check.js"></script>
 	<script src="./jquery-2.2.0.min.js"></script>
-    <meta name="viewport" content="width=400">
+    <meta name="viewport" content="width=398">
     <style>
       body{margin:0px;}
-      #topscreen{width:400px;height:267px;overflow:hidden;}
-      #bottomscreen{width:377px;height:267px;overflow:hidden;margin:0 }
+      #topscreen{width:377x;height:267px;}
+      #bottomscreen{width:377px;height:267px;}
 	  #dropdown_dex{visibility:hidden}
 	  #dropdown_johto{visibility:hidden}
 	  #dropdown_hoenn{visibility:hidden}
@@ -22,11 +23,11 @@
     </style>
 	
   </head>
+  
   <body id="MainBody">
 	<script src="./3ds_stats.js"></script>
-	
     <div  id="topscreen">
-	<canvas id="PokeDex_3DS_Top" width="398" height="265" style="border:1px solid #000000;position:fixed;">This System does not Support HTML5 Canvas because you have a Shit Browser</canvas>
+	<canvas id="PokeDex_3DS_Top" width="398" height="265" style="border:1px solid #000000;position:absolute;">This System does not Support HTML5 Canvas because you have a Shit Browser</canvas>
 	<a id="mpo_download" href=""></a>
 	<select id="iv_dropdown" onchange="updateIVs()">
 	<option value="54">Select a Stat</option>
@@ -815,10 +816,11 @@
 	<option value="721">Volcanion</option>
 	</select>
 	</div>
-    <div id="bottomscreen"><canvas onclick="getPosition(event)"id="PokeDex_3DS_Bottom" width="398" height="265" style="border:1px solid #000000;position:fixed;">This System does not Support HTML5 Canvas because you have a Shit Browser</canvas>
+	
+    <div id="bottomscreen">
+	<canvas onclick="getPosition(event)"id="PokeDex_3DS_Bottom" width="398" height="265" style="border:1px solid #000000;position:absolute;">This System does not Support HTML5 Canvas because you have a Shit Browser</canvas>
 	</div>
-	<script src="./main.js">
-	</script>
-
+	<script src="./main.js"></script>
   </body>
+  
 </html>

@@ -2,16 +2,22 @@ var mouseX;
 var mouseY;
 var canvasBottom = document.getElementById("PokeDex_3DS_Bottom");
 var canvasTop = document.getElementById("PokeDex_3DS_Top");
-var version = "0.7";
-var versionNum = 7;
+var version = "0.8";
+var versionNum = 8;
 var lastPokemonNum = 0;
 var levelGlobal = 1;
 var natureVal = 0;
-
-window.setInterval(function () {
-    window.scrollTo(0, 265);  
+var scrollInto = document.getElementById("bottomscreen");
+scrollInto.scrollIntoView();
+/*var new3dstimer = window.setInterval(function () 
+{
+	window.scrollTo(0, 0);  
 }, 50);
-
+clearInterval(new3dstimer);*/
+window.setInterval(function()
+{
+	window.scrollTo(0,265);
+}, 50);
 function Button(x, y, width, height, image)
 {
 	this.x = x;
@@ -31,40 +37,6 @@ function buttonPlace(thisButton)
 		context.drawImage(imageObj, thisButton.x, thisButton.y);
 	};
 	imageObj.src = imageSource;
-}
-function getPosition(event) {
-    var x,
-        y;
-	canvasElement = canvasBottom
-    if (event.x != undefined && event.y != undefined) {
-        x = event.x;
-        y = event.y;
-    } else {
-        x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-        y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
-    }
-    x -= canvasElement.offsetLeft;
-    y -= canvasElement.offsetTop;
-    x = x - window.pageXOffset;
-    y = y - window.pageYOffset;
-    mouseX = x;
-    mouseY = y;
-	
-	//Check to see if a Button has been pressed
-	checkButtonClick(kantoButton,0);
-	checkButtonClick(johtoButton,1);
-	checkButtonClick(hoennButton,2);
-	checkButtonClick(sinnohButton,3);
-	checkButtonClick(unovaButton,4);
-	checkButtonClick(kalosButton,5);
-	checkButtonClick(mpoButton,6);
-	checkButtonClick(changelogButton,7);
-	checkButtonClick(aboutButton,8);
-	checkButtonClick(creditsButton,9);
-	checkButtonClick(evButton,10);
-	checkButtonClick(ivButton,11);
-	checkButtonClick(levelButton,12);
-	checkButtonClick(natureButton,13);
 }
 function checkButtonClick(thisButton,buttonType)
 {
@@ -146,6 +118,44 @@ function checkButtonClick(thisButton,buttonType)
 	
 }
 }
+function getPosition(event) {
+    var x,
+        y;
+	canvasElement = canvasBottom
+    if (event.x != undefined && event.y != undefined) {
+        x = event.x;
+        y = event.y;
+    } else {
+        x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+        y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+    }
+    x -= canvasElement.offsetLeft;
+    y -= canvasElement.offsetTop;
+    x = x - window.pageXOffset;
+    y = y - window.pageYOffset;
+	if (navigator.userAgent.indexOf('New Nintendo 3DS') != -1) //New Nintendo 3DS not Supported Yet
+	{
+		y+=529;
+	}
+    mouseX = x;
+    mouseY = y;
+	//Check to see if a Button has been pressed
+	checkButtonClick(kantoButton,0);
+	checkButtonClick(johtoButton,1);
+	checkButtonClick(hoennButton,2);
+	checkButtonClick(sinnohButton,3);
+	checkButtonClick(unovaButton,4);
+	checkButtonClick(kalosButton,5);
+	checkButtonClick(mpoButton,6);
+	checkButtonClick(changelogButton,7);
+	checkButtonClick(aboutButton,8);
+	checkButtonClick(creditsButton,9);
+	checkButtonClick(evButton,10);
+	checkButtonClick(ivButton,11);
+	checkButtonClick(levelButton,12);
+	checkButtonClick(natureButton,13);
+}
+
 window.showState = function (elementId) {
     var dropdown = document.getElementById(elementId);
     var event;
@@ -180,6 +190,7 @@ function showChangelog()
 	changelogText[4] = "v0.5 - Minor Stability Update: Changed Image Links to short form for when Website changes Location things don't break\nAdded all Unova Region Pokemon\nStable enough to stand on without falling off while Sober";
 	changelogText[5] = "v0.6 - All Kalos Pokemon added except Hoopa, Diancie and Volcanion\nAwesome Looking User Interface Courtesy of ElyosOfTheAbyss\nOther Minor Bug Fixes\nStable enough to balance a fork on now\nWe Apologize for the Slow Loading Times not much we can do";
 	changelogText[6] = "v0.7 - Added Natures, Levels, IVs, EVs, Actual Stat Display, A few more MPO Images, Bug Fixes, Diance Volcanion and Hoopa are now added, Stable enough to keep a Horse in now!";
+	changelogText[7] = "v0.8 - NEW 3DS SUPPORT!";
 	//Changelog End
 	
 	
