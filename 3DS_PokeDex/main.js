@@ -174,6 +174,7 @@ function showCredits()
 	alert("Programming\nShubshub");
 	alert("Bug Testing\\UI Design\nElyosOfTheAbyss");
 	alert("Kalos Pokemon Sprites\nSerebii\nhttp://www.serebii.net/")
+	alert("New 3DS Support Testing\nSil3nt Pr0digy\nElyosOfTheAbyss");
 }
 
 
