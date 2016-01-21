@@ -146,6 +146,22 @@ function updateIVs()
 				break;
 			}
 			break;
+		case 6:
+			healthIV = 31;
+			attackIV = 31;
+			defenseIV = 31;
+			specialAtkIV = 31;
+			specialDefIV = 31;
+			speedIV = 31;
+			break;
+		case 7:
+			healthIV = 0;
+			attackIV = 0;
+			defenseIV = 0;
+			specialAtkIV = 0;
+			specialDefIV = 0;
+			speedIV = 0;
+			break;
 		case 54:
 			break;
 		default:
