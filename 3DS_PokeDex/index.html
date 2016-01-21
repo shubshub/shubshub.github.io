@@ -16,6 +16,9 @@
 	  #dropdown_unova{visibility:hidden}
 	  #dropdown_kalos{visibility:hidden}
 	  #mpo_download{visibility:hidden}
+	  #nature_dropdown{visibility:hidden}
+	  #iv_dropdown{visibility:hidden}
+	  #ev_dropdown{visibility:hidden}
     </style>
 	
   </head>
@@ -25,6 +28,52 @@
     <div  id="topscreen">
 	<canvas id="PokeDex_3DS_Top" width="398" height="265" style="border:1px solid #000000;position:fixed;">This System does not Support HTML5 Canvas because you have a Shit Browser</canvas>
 	<a id="mpo_download" href=""></a>
+	<select id="iv_dropdown" onchange="updateIVs()">
+	<option value="54">Select a Stat</option>
+	<option value="0">Health IVs</option>
+	<option value="1">Attack IVs</option>
+	<option value="2">Defense IVs</option>
+	<option value="3">Special Attack IVs</option>
+	<option value="4">Special Defense IVs</option>
+	<option value="5">Speed IVs</option>
+	</select>
+	<select id="ev_dropdown" onchange="updateEVs()">
+	<option value="54">Select a Stat</option>
+	<option value="0">Health EVs</option>
+	<option value="1">Attack EVs</option>
+	<option value="2">Defense EVs</option>
+	<option value="3">Special Attack EVs</option>
+	<option value="4">Special Defense EVs</option>
+	<option value="5">Speed EVs</option>
+	</select>
+	
+	<select id="nature_dropdown" onchange="updateTop(lastPokemonNum)">
+	<option value="0">Hardy</option>
+	<option value="1">Lonely</option>
+	<option value="2">Brave</option>
+	<option value="3">Adamant</option>
+	<option value="4">Naughty</option>
+	<option value="5">Bold</option>
+	<option value="6">Docile</option>
+	<option value="7">Relaxed</option>
+	<option value="8">Impish</option>
+	<option value="9">Lax</option>
+	<option value="10">Timid</option>
+	<option value="11">Hasty</option>
+	<option value="12">Serious</option>
+	<option value="13">Jolly</option>
+	<option value="14">Naive</option>
+	<option value="15">Modest</option>
+	<option value="16">Mild</option>
+	<option value="17">Quiet</option>
+	<option value="18">Bashful</option>
+	<option value="19">Rash</option>
+	<option value="20">Calm</option>
+	<option value="21">Gentle</option>
+	<option value="22">Sassy</option>
+	<option value="23">Careful</option>
+	<option value="24">Quirky</option>
+	</select>
 	<select id="dropdown_dex" onchange="updatePokemon('dropdown_dex')">
   <option value="000">Select - Kanto Region</option>
   <option value="1">Bulbasaur</option>
@@ -761,11 +810,12 @@
 	<option value="716">Xerneas</option>
 	<option value="717">Yveltal</option>
 	<option value="718">Zygarde</option>
+	<option value="719">Diancie</option>
+	<option value="720">Hoopa</option>
+	<option value="721">Volcanion</option>
 	</select>
 	</div>
     <div id="bottomscreen"><canvas onclick="getPosition(event)"id="PokeDex_3DS_Bottom" width="398" height="265" style="border:1px solid #000000;position:fixed;">This System does not Support HTML5 Canvas because you have a Shit Browser</canvas>
-	
-	
 	</div>
 	<script src="./main.js">
 	</script>

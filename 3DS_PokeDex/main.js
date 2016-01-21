@@ -2,9 +2,11 @@ var mouseX;
 var mouseY;
 var canvasBottom = document.getElementById("PokeDex_3DS_Bottom");
 var canvasTop = document.getElementById("PokeDex_3DS_Top");
-var version = "0.6";
-var versionNum = 6;
-//alert(navigator.appVersion);
+var version = "0.7";
+var versionNum = 7;
+var lastPokemonNum = 0;
+var levelGlobal = 1;
+var natureVal = 0;
 
 window.setInterval(function () {
     window.scrollTo(0, 265);  
@@ -47,6 +49,8 @@ function getPosition(event) {
     y = y - window.pageYOffset;
     mouseX = x;
     mouseY = y;
+	
+	//Check to see if a Button has been pressed
 	checkButtonClick(kantoButton,0);
 	checkButtonClick(johtoButton,1);
 	checkButtonClick(hoennButton,2);
@@ -57,6 +61,10 @@ function getPosition(event) {
 	checkButtonClick(changelogButton,7);
 	checkButtonClick(aboutButton,8);
 	checkButtonClick(creditsButton,9);
+	checkButtonClick(evButton,10);
+	checkButtonClick(ivButton,11);
+	checkButtonClick(levelButton,12);
+	checkButtonClick(natureButton,13);
 }
 function checkButtonClick(thisButton,buttonType)
 {
@@ -81,6 +89,10 @@ function checkButtonClick(thisButton,buttonType)
 	7: Changelog Button
 	8: About Button
 	9: Credits Button
+	10: EV Button
+	11: IV Button
+	12: Level Button
+	13: Nature Button
 	*/
 	switch(buttonType)
 	{
@@ -100,7 +112,6 @@ function checkButtonClick(thisButton,buttonType)
 			showState('dropdown_unova');
 			break;
 		case 5:
-			//alert("Not yet Ready");
 			showState('dropdown_kalos');
 			break;
 		case 6:
@@ -114,6 +125,18 @@ function checkButtonClick(thisButton,buttonType)
 			break;
 		case 9:
 			showCredits();
+			break;
+		case 10:
+			showState('ev_dropdown');
+			break;
+		case 11:
+			showState('iv_dropdown');
+			break;
+		case 12:
+			getLevel();
+			break;
+		case 13:
+			showState('nature_dropdown');
 			break;
 		default:
 			alert("Something went wrong =/");
@@ -156,6 +179,7 @@ function showChangelog()
 	changelogText[3] = "v0.4 - All Base Stats have been Added and Display Correctly\nThanks to pokeapi.co for the JSON Data";
 	changelogText[4] = "v0.5 - Minor Stability Update: Changed Image Links to short form for when Website changes Location things don't break\nAdded all Unova Region Pokemon\nStable enough to stand on without falling off while Sober";
 	changelogText[5] = "v0.6 - All Kalos Pokemon added except Hoopa, Diancie and Volcanion\nAwesome Looking User Interface Courtesy of ElyosOfTheAbyss\nOther Minor Bug Fixes\nStable enough to balance a fork on now\nWe Apologize for the Slow Loading Times not much we can do";
+	changelogText[6] = "v0.7 - Added Natures, Levels, IVs, EVs, Actual Stat Display, A few more MPO Images, Bug Fixes, Diance Volcanion and Hoopa are now added, Stable enough to keep a Horse in now!";
 	//Changelog End
 	
 	
@@ -193,24 +217,36 @@ function bottomUIhandler()
 		buttonPlace(changelogButton);
 		buttonPlace(aboutButton);
 		buttonPlace(creditsButton);
+		buttonPlace(evButton);
+		buttonPlace(ivButton);
+		buttonPlace(levelButton);
+		buttonPlace(natureButton);
 	}
-	bottomUI.src = './images/bottomUI.png';
+	bottomUI.src = './images/UI/background/bottomUI.png';
 	
 
 }
 var ctx = canvasBottom.getContext("2d");
 
 //All the Buttons must be Instantiated here
-var kantoButton = new Button(7,59,64,24,'./images/clickButton.png');
-var johtoButton = new Button(71,59,64,24,'./images/Johot.png');
-var hoennButton = new Button(135,59,64,24,'./images/Hoenn.png');
-var sinnohButton = new Button(199,59,64,24,'./images/Sinnoh.png');
-var unovaButton = new Button(263,59,64,24,'./images/Unova.png');
-var kalosButton = new Button(327,59,64,24,'./images/Kalos.png');
-var mpoButton = new Button(352,225,48,16,'./images/mpo_download.png');
-var changelogButton = new Button(0,225,128,16,'./images/changelog.png');
-var aboutButton = new Button(0,207,128,16,'./images/about.png');
-var creditsButton = new Button(0,189,128,16,'./images/credits.png');
+var kantoButton = new Button(7,59,64,24,'./images/UI/buttons/clickButton.png');
+var johtoButton = new Button(71,59,64,24,'./images/UI/buttons/Johot.png');
+var hoennButton = new Button(135,59,64,24,'./images/UI/buttons/Hoenn.png');
+var sinnohButton = new Button(199,59,64,24,'./images/UI/buttons/Sinnoh.png');
+var unovaButton = new Button(263,59,64,24,'./images/UI/buttons/Unova.png');
+var kalosButton = new Button(327,59,64,24,'./images/UI/buttons/Kalos.png');
+
+//Left Sidebar
+var changelogButton = new Button(0,225,128,16,'./images/UI/buttons/changelog.png');
+var aboutButton = new Button(0,207,128,16,'./images/UI/buttons/about.png');
+var creditsButton = new Button(0,189,128,16,'./images/UI/buttons/credits.png');
+
+//Right Sidebar
+var mpoButton = new Button(352,225,49,18,'./images/UI/buttons/mpo_download.png');
+var evButton = new Button(352,207,49,18,'./images/UI/buttons/EVbutton.png');
+var ivButton = new Button(352,189,49,18,'./images/UI/buttons/IVbutton.png');
+var levelButton = new Button(352,171,49,18,'./images/UI/buttons/levelButton.png');
+var natureButton = new Button(352,153,49,18,'./images/UI/buttons/natureButton.png');
 
 bottomUIhandler();
 
@@ -235,6 +271,94 @@ function DrawStatWord_Stats(value)
 	ctx_Top.font = "15px Arial";
 	getStats(value);
 }
+function getNature(natureID)
+{
+	var drawString = "";
+	natureID = parseInt(natureID);
+	switch(natureID)
+	{
+		case 0:
+			drawString = "Hardy";
+			break;
+		case 1:
+			drawString = "Lonely";
+			break;
+		case 2:
+			drawString = "Brave";
+			break;
+		case 3:
+			drawString = "Adamant";
+			break;
+		case 4:
+			drawString = "Naughty";
+			break;
+		case 5:
+			drawString = "Bold";
+			break;
+		case 6:
+			drawString = "Docile";
+			break;
+		case 7:
+			drawString = "Relaxed";
+			break;
+		case 8:
+			drawString = "Impish";
+			break;
+		case 9:
+			drawString = "Lax";
+			break;
+		case 10:
+			drawString = "Timid";
+			break;
+		case 11:
+			drawString = "Hasty";
+			break;
+		case 12:
+			drawString = "Serious";
+			break;
+		case 13:
+			drawString = "Jolly";
+			break;
+		case 14:
+			drawString = "Naive";
+			break;
+		case 15:
+			drawString = "Modest";
+			break;
+		case 16:
+			drawString = "Mild";
+			break;
+		case 17:
+			drawString = "Quiet";
+			break;
+		case 18:
+			drawString = "Bashful";
+			break;
+		case 19:
+			drawString = "Rash";
+			break;
+		case 20:
+			drawString = "Calm";
+			break;
+		case 21:
+			drawString = "Gentle";
+			break;
+		case 22:
+			drawString = "Sassy";
+			break;
+		case 23:
+			drawString = "Careful";
+			break;
+		case 24:
+			drawString = "Quirky";
+			break;
+		default:
+			drawString = "???";
+			break;
+	}
+	return drawString;
+	
+}
 function DrawUI(value)
 {
 	//This function handles everything to do with the User Interface on the Top Screen
@@ -256,25 +380,59 @@ function DrawUI(value)
 		ctx_Top.stroke();
 		ctx_Top.stroke();
 		document.getElementById("mpo_download").href = './images/mpo/'+use+'.mpo';
-		
+		var nature = document.getElementById("nature_dropdown");
+		natureVal = nature.options[nature.selectedIndex].value;
+		var natureString = getNature(natureVal);
+		ctx_Top.font = "15px Arial";
+		ctx_Top.fillText(natureString,35,215);
+		ctx_Top.fillText(levelGlobal,35,199);
 		imageObj.onload = function() 
 		{
 			topCanvasCTX.drawImage(imageObj, 15, 77,96,96);
 		};
+		
 		ctx_Top.fillStyle = 'black';
 		DrawStatWord_Stats(use);
 		
+		
 	}
 	
-	topCanvasUI.src = './images/TopUI.png'
+	topCanvasUI.src = './images/UI/background/TopUI.png'
 	imageObj.src = './images/pokemon/'+value+'.png';
+}
+function getLevel()
+{
+	var levelPrompt = prompt("Set Pokemon Level 1-100","1");
+	if (levelPrompt !=null)
+	{
+		levelPrompt = parseInt(levelPrompt);
+		if ((levelPrompt <=100) && (levelPrompt >=1) && !(isNaN(levelPrompt)))
+		{
+			levelGlobal = parseInt(levelPrompt);
+			updateTop(lastPokemonNum);
+		}
+		else
+		{
+			alert("Level must be from 1-100");
+			getLevel();
+		}
+	}
 }
 function updatePokemon(elementId)
 {
 	var e = document.getElementById(elementId);
 	var value = e.options[e.selectedIndex].value;
 	var text = e.options[e.selectedIndex].text;
-	
+	lastPokemonNum = value;
 	DrawUI(value);
 }
+function updateTop(value)
+{
+	//This Function is Useful for updating the UI without changing the Pokemon
+	if (value !=0)
+	{
+		DrawUI(value);
+	}
+}
+
 
