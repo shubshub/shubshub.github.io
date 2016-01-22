@@ -1,1 +1,1 @@
-{"hp": 80,"attack": 110, "defense": 120,"sp_atk": 130, "sp_def": 90,"speed": 70}
+{"hp": 80,"attack": 110, "defense": 120,"sp_atk": 130, "sp_def": 90,"speed": 70,"name":"Volcanion", "types": [{"name":"water"}, {"name":"fire"}]}

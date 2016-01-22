@@ -20,15 +20,109 @@ function getStats(pokedex)
 {
  $.getJSON("./jsonData/"+pokedex+".json", function(json)
  {
+	
 	statsArray[0] = json.hp;
 	statsArray[1] = json.attack;
 	statsArray[2] = json.defense;
 	statsArray[3] = json.sp_atk;
 	statsArray[4] = json.sp_def;
 	statsArray[5] = json.speed;
-	drawStats()
+	drawType(json.types);
+	drawStats();
  });
  
+}
+
+function drawType(typeArray)
+{
+	var typeNames = new Array(2);
+	var typeImages = new Array(2);
+	typeImages[0] = new Image();
+	typeImages[1] = new Image();
+	var typeContext = canvasTop.getContext('2d');
+	typeImages[0].onload = function()
+	{
+		typeContext.drawImage(typeImages[0],270,13);
+	}
+	typeImages[1].onload = function()
+	{
+		typeContext.drawImage(typeImages[1],334,13);
+	}
+	for (var i = 0; i < typeArray.length; i++)
+	{
+		typeNames[i] = typeArray[i].name;
+		switch(typeNames[i])
+		{
+			case "normal":
+				typeImages[i].src = './images/type/normal.gif';
+				break;
+			case "fire":
+				typeImages[i].src = './images/type/fire.gif';
+				break;
+			case "fighting":
+				typeImages[i].src = './images/type/fighting.gif';
+				break;
+			case "water":
+				typeImages[i].src = './images/type/water.gif';
+				break;
+			case "flying":
+				typeImages[i].src = './images/type/flying.gif';
+				break;
+			case "grass":
+				typeImages[i].src = './images/type/grass.gif';
+				break;
+			case "poison":
+				typeImages[i].src = './images/type/poison.gif';
+				break;
+			case "electric":
+				typeImages[i].src = './images/type/electric.gif';
+				break;
+			case "ground":
+				typeImages[i].src = './images/type/ground.gif';
+				break;
+			case "psychic":
+				typeImages[i].src = './images/type/psychic.gif';
+				break;
+			case "rock":
+				typeImages[i].src = './images/type/rock.gif';
+				break;
+			case "ice":
+				typeImages[i].src = './images/type/ice.gif';
+				break;
+			case "bug":
+				typeImages[i].src = './images/type/bug.gif';
+				break;
+			case "dragon":
+				typeImages[i].src = './images/type/dragon.gif';
+				break;
+			case "ghost":
+				typeImages[i].src = './images/type/ghost.gif';
+				break;
+			case "dark":
+				typeImages[i].src = './images/type/dark.gif';
+				break;
+			case "steel":
+				typeImages[i].src = './images/type/steel.gif';
+				break;
+			case "fairy":
+				typeImages[i].src = './images/type/fairy.gif';
+				break;
+			default:
+				alert("Something went wrong with types...");
+				break;
+		}
+			
+			
+	}
+}
+
+function returnName(pokedex)
+{
+	$.getJSON("./jsonData/"+pokedex+".json",function(json)
+	{
+		DrawUI(lastPokemonNum,json.name);
+		return json.name;
+	});
 }
 function updateIVs()
 {
@@ -538,6 +632,10 @@ function drawEV()
 function BaseToActual_HP(BaseHP, IV, EV, level)
 {
 	var actual = (((2 * BaseHP + IV + (EV / 4)) * level) / 100) + level + 10;
+	if (BaseHP == 1)
+	{
+		actual = 1;
+	}
 	return Math.floor(actual);
 }
 
