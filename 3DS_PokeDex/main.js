@@ -2,14 +2,17 @@ var mouseX;
 var mouseY;
 var canvasBottom = document.getElementById("PokeDex_3DS_Bottom");
 var canvasTop = document.getElementById("PokeDex_3DS_Top");
-var version = "0.9";
+var version = "1.0 - Dev";
 var versionNum = 9;
 var lastPokemonNum = 0;
 var lastPokemonName = "";
 var levelGlobal = 1;
 var natureVal = 0;
+var abilityID = 0;
 var topPageNumber = 0; //Set starting Page number to 0, Which is the Main UI for the Top Screen
-var bottomPageNumber = 0; //Set starting Page number to 0, Which is the Main UI for the Bottom Screen 
+var bottomPageNumber = 0; //Set starting Page number to 0, Which is the Main UI for the Bottom Screen
+
+
 window.setInterval(function()
 {
 	window.scrollTo(0,265);
@@ -44,7 +47,6 @@ function changePage()
 	bottomUIhandler();
 	DrawUI(lastPokemonNum,lastPokemonName);
 }
-
 function getPosition(event) {
     var x,
         y;
@@ -87,6 +89,7 @@ function getPosition(event) {
 		checkButtonClick(gameSelectButton,15);
 	}
 	checkButtonClick(searchPokemonButton,16);
+	checkButtonClick(damagePassButton,17);
 }
 
 window.showState = function (elementId) {
@@ -127,6 +130,7 @@ function checkButtonClick(thisButton,buttonType)
 	14: Other Data Button
 	15: Game Select Button
 	16: Search Pokemon Button
+	17: Damage Password Button
 	*/
 		switch(buttonType)
 		{
@@ -149,7 +153,7 @@ function checkButtonClick(thisButton,buttonType)
 				showState('dropdown_kalos');
 				break;
 			case 6:
-				window.open(document.getElementById('mpo_download').href);
+				//window.open(document.getElementById('mpo_download').href);
 				break;
 			case 7:
 				showChangelog();
@@ -180,6 +184,9 @@ function checkButtonClick(thisButton,buttonType)
 				break;
 			case 16:
 				searchPokemon();
+				break;
+			case 17:
+				dropdownPageSwap("move_list",2);
 				break;
 			default:
 				alert("Something went wrong =/");
@@ -358,7 +365,7 @@ function showChangelog()
 	changelogText[5] = "v0.6 - All Kalos Pokémon added except Hoopa, Diancie and Volcanion\nAwesome Looking User Interface Courtesy of ElyosOfTheAbyss\nOther Minor Bug Fixes\nStable enough to balance a fork on now\nWe Apologize for the Slow Loading Times not much we can do";
 	changelogText[6] = "v0.7 - Added Natures, Levels, IVs, EVs, Actual Stat Display, A few more MPO Images, Bug Fixes, Diance Volcanion and Hoopa are now added, Stable enough to keep a Horse in now!";
 	changelogText[7] = "v0.8 - NEW 3DS SUPPORT!\nCan now choose to set All IVs to 31 or to 0";
-	changelogText[8] = "v0.9 - Added Quick Find Button for easy Pokémon searching\nThe selected Pokémon's types are now displayed in the top right corner as well"
+	changelogText[8] = "v0.9 - Added Quick Find Button for easy Pokémon searching"
 	//Changelog End
 	
 	
@@ -402,6 +409,7 @@ function bottomUIhandler()
 		buttonPlace(ivButton);
 		buttonPlace(levelButton);
 		buttonPlace(natureButton);
+		buttonPlace(damagePassButton);
 		if (bottomPageNumber == 1)
 		{
 			buttonPlace(gameSelectButton);
@@ -429,9 +437,10 @@ var searchPokemonButton = new Button(0,89,122,24,'./images/UI/buttons/searchPoke
 var changelogButton = new Button(0,225,128,16,'./images/UI/buttons/changelog.png');
 var aboutButton = new Button(0,207,128,16,'./images/UI/buttons/about.png');
 var creditsButton = new Button(0,189,128,16,'./images/UI/buttons/credits.png');
+var damagePassButton = new Button(0,171,128,16,'./images/UI/buttons/damagePassButton.png');
 
 //Right Sidebar
-var mpoButton = new Button(352,225,49,18,'./images/UI/buttons/mpo_download.png');
+//var mpoButton = new Button(352,225,49,18,'./images/UI/buttons/mpo_download.png');
 var evButton = new Button(352,207,49,18,'./images/UI/buttons/EVbutton.png');
 var ivButton = new Button(352,189,49,18,'./images/UI/buttons/IVbutton.png');
 var levelButton = new Button(352,171,49,18,'./images/UI/buttons/levelButton.png');
@@ -738,4 +747,6 @@ function updateTop(value,text)
 	}
 }
 
+	//Put New 3DS Only code here
+	
 

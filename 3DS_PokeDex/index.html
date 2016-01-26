@@ -21,15 +21,17 @@
 	  #ev_dropdown{visibility:hidden}
 	  #other_data_dropdown{visibility:hidden}
 	  #games_list{visibility:hidden}
+	  #move_list{visibility:hidden}
     </style>
 	
   </head>
-  
   <body id="MainBody">
+	
 	<script src="./3ds_stats.js"></script>
     <div  id="topscreen">
 	<canvas id="PokeDex_3DS_Top" width="398" height="265" style="border:1px solid #000000;position:absolute;">This System does not Support HTML5 Canvas because you have a Shit Browser</canvas>
 	<a id="mpo_download" href=""></a>
+	<select id="move_list"></select>
 	<select id="games_list">
 	<option value="654">Select a Game</option>
 	<option value="0">Red</option>
@@ -111,7 +113,7 @@
 	<option value="24">Quirky</option>
 	</select>
 	<select id="dropdown_dex" onchange="updatePokemon('dropdown_dex')">
-  <option value="000">Select - Kanto Region</option>
+  <option value="0">Select - Kanto Region</option>
   <option value="1">Bulbasaur</option>
   <option value="2">Ivysaur</option>
   <option value="3">Venusaur</option>
@@ -265,7 +267,7 @@
   <option value="151">Mew</option>
 </select>
 	<select id="dropdown_johto" onchange="updatePokemon('dropdown_johto')">
-	<option value="000">Select - Johto Region</option>
+	<option value="0">Select - Johto Region</option>
 	<option value="152">Chikorita</option>
 	<option value="153">Bayleaf</option>
 	<option value="154">Meganium</option>
@@ -507,7 +509,7 @@
 	
 	</select>
 	<select id="dropdown_sinnoh" onchange="updatePokemon('dropdown_sinnoh')">
-	<option value="000">Select - Sinnoh Region</option>
+	<option value="0">Select - Sinnoh Region</option>
 	<option value="387">Turtwig</option>
 	<option value="388">Grotle</option>
 	<option value="389">Torterra</option>
@@ -617,7 +619,7 @@
 	<option value="493">Arceus</option>	
 	</select>
 	<select id="dropdown_unova" onchange="updatePokemon('dropdown_unova')">
-	<option value="000">Select - Unova Region</option>
+	<option value="0">Select - Unova Region</option>
 	<option value="494">Victini</option>
 	<option value="495">Snivy</option>
 	<option value="496">Servine</option>
@@ -776,7 +778,7 @@
 	<option value="649">Genesect</option>
 	</select>
 	<select id="dropdown_kalos" onchange="updatePokemon('dropdown_kalos')">
-	<option value="000">Select - Kalos Region</option>
+	<option value="0">Select - Kalos Region</option>
 	<option value="650">Chespin</option>
 	<option value="651">Quilladin</option>
 	<option value="652">Chesnaught</option>

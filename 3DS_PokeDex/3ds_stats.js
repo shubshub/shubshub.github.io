@@ -16,9 +16,13 @@ var defenseEV = 0;
 var specialAtkEV = 0;
 var specialDefEV = 0;
 var speedEV = 0;
+var movesAdded = 0;
+var currentMinimumItem = 1; //First Item to Populate Moves List with
+var populated = 0;
+var modelDeferred;
 function getStats(pokedex) 
 {
- $.getJSON("./jsonData/"+pokedex+".json", function(json)
+ $.getJSON("./jsonData/pokemon/"+pokedex+".json", function(json)
  {
 	
 	statsArray[0] = json.hp;
@@ -32,7 +36,77 @@ function getStats(pokedex)
  });
  
 }
+function dropdownPageSwap(dropdown_id,pageChangeType)
+{
+	/*
+	pageChangeType:
+	0 = Go back a Page (-50)
+	1 = Go forward a Page (+50)
+	2 = No Change (Just loaded up)
+	*/
+	if (navigator.userAgent.indexOf('Nintendo 3DS') != -1) 
+	{ //If the UserAgent is not "Nintendo 3DS"
+		//alert("This will take a While"); //Redirect to an other page
+	}
+	
+	switch(pageChangeType)
+	{
+		case 0:
+			currentMinimumItem-=50;
+			break;
+		case 1:
+			currentMinimumItem+=50;
+			break;
+		case 2:
+			//Do nothing
+			break;
+		default:
+			alert("Something bad happened");
+			break;
+	}
+	$("#move_list").empty();
+	if (currentMinimumItem >1)
+	{
+		populate = document.getElementById("move_list");
+		var opt = document.createElement('option');
+		opt.value = 0;
+		opt.innerHTML = "Previous Page";
+		populate.appendChild(opt);
+	}
+	populateMovesJSON("move_list",currentMinimumItem,currentMinimumItem+49,50);
+	
+}
+function populateMovesJSON(dropdown_id,start,end,length)
+{
+	
+	//var populate = document.getElementById(dropdown_id);
+	var dropdown = $(dropdown_id);
+	movesAdded = start;
+	
+		$.ajax({
+				url: "./jsonData/moves/combined.json",
+				dataType: 'json',
+				async: true,
+				success: function(data)
+				{
+					//var parsed = JSON.stringify(json);
+					
+					//var parsed = JSON.parse(data);
+					//alert(data);
+					var currentPage = data.slice(start, end);
+					//alert(currentPage);
+					dropdown.append(currentPage.map(function(x) 
+					{
+						var optionEle = $("<option>");
+						optionEle.attr("value", x.id).text(x.name);
+					}));
+					showState(dropdown_id);
+					
+				}
+				});
+				
 
+}
 function drawType(typeArray)
 {
 	var typeNames = new Array(2);
@@ -118,7 +192,7 @@ function drawType(typeArray)
 
 function returnName(pokedex)
 {
-	$.getJSON("./jsonData/"+pokedex+".json",function(json)
+	$.getJSON("./jsonData/pokemon/"+pokedex+".json",function(json)
 	{
 		DrawUI(lastPokemonNum,json.name);
 		return json.name;
@@ -270,7 +344,7 @@ function updateIVs()
 	ivArray[4] = specialDefIV;
 	ivArray[5] = speedIV;
 	f.selectedIndex = 0;
-	updateTop(lastPokemonNum);
+	updateTop(lastPokemonNum,lastPokemonName);
 }
 
 function updateEVs()
@@ -402,7 +476,7 @@ function updateEVs()
 	evArray[4] = specialDefEV;
 	evArray[5] = speedEV;
 	f.selectedIndex = 0;
-	updateTop(lastPokemonNum);
+	updateTop(lastPokemonNum,lastPokemonName);
 }
 
 
