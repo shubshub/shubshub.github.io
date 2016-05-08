@@ -541,7 +541,6 @@ function lang(txt,out)
 
 function golpherOptim(txt,chan)
 {
-	txt = txt.replace(commandTag+"golphOptim ","")
 	
 	var originalLength = txt.length;
 	var findPlus = [];
