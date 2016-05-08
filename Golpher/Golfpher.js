@@ -4,6 +4,12 @@ function interpret()
 	var b = document.getElementById("output");
 	lang(a,b);
 }
+function converter()
+{
+	var a = document.getElementById("input");
+	var b = document.getElementById("output");
+	convert(a,b);
+}
 function getCloser(a, b, c) {
     b = b || c;
     return Math.round(a / b) * b;
@@ -16,10 +22,7 @@ function golphisEven(n) {
 
 function convert(txt,chan)
 {
-	if (chan!=undefined)
-	{
-		txt = txt.replace(commandTag+"golphConvert ","");
-	}
+	txt = txt.value;
 	var tex = "";
 	tex = txt;
 	t=""
@@ -266,41 +269,7 @@ function convert(txt,chan)
 	}
 	t+="=";
 	t = golpherOptim(t);
-	sendMessage("```"+t+"```",chan);
-	console.log(t)
-}
-
-function golpherHelp(nothing,chan)
-{
-	//var msg="golpher is an Esoteric Language that works on a single Char Pointer\nThere are only 4 functions in golpher\n```+ : Add one to the Char Pointer\n- : Remove one from the Char Pointer\n< : Push the character at the char pointers position onto the stack\n[+ or -,+ or -]: whatever is between the [ and ] will be multiplied together they are seperate with a ,\n= : execute the code thats on the stack\n```\n\n"+commandTag+"golpher [code] to execute a golpher program";
-	var msg = [];
-	msg[0] = "golpher is an Esoteric Programming Language that works on a single char pointer";
-	msg[1] = "There are only a few functions in golpher";
-	msg[2] = "```+: +1 to the char pointer";
-	msg[3] = "-: -1 from the char pointer";
-	msg[4] = "×: +4 to the char pointer (Unicode &#215;)";
-	msg[5] = "÷: -4 from the char pointer (Unicode &#247;)";
-	msg[6] = "^: +8 to the char pointer";
-	msg[7] = "@: -8 from the char pointer";
-	msg[8] = "?: +16 to the char pointer";
-	msg[9] = "!: -16 from the char pointer";
-	msg[10] = "&: +32 to the char pointer";
-	msg[11] = "%: -32 from the char pointer";
-	msg[12] = "$: +64 to the char pointer";
-	msg[13] = "#: -64 from the char pointer";
-	msg[14] = ": : +128 to the char pointer";
-	msg[15] = "; : -128 from the char pointer";
-	msg[16] = "[: Start a Multiplication loop";
-	msg[17] = ",: Sepereate a set of instructions to be multiplied by a number chosen by more instructions";
-	msg[18] = "]: End a Multiplication loop";
-	msg[19] = "': Double the Pointer Value";
-	msg[20] = ".: Halve the pointer Value";
-	msg[21] = "<: Push the character onto the stack which is where the char pointer is pointing";
-	msg[22] = "=: Output the code to the user```";
-	msg[23] = "``Hello World Example: '&++<'×<&÷+<^-<<×-<#!+<'?^-<?^<×-<÷--<@<.!<=``";
-	msg[24] = "Type ``"+commandTag+"golpher [code]`` to execute code";
-	var message = msg.join("\n");
-	sendMessage(message,chan);
+	chan.value = t;
 }
 /*
 + +1
