@@ -25,10 +25,10 @@ function golphisEven(n) {
   return n === 0 || !!(n && !(n%2));
 }
 
-function golpherHelp()
+function gopherHelp()
 {
 	out = document.getElementById("output");
-	//var msg="golpher is an Esoteric Language that works on a single Char Pointer\nThere are only 4 functions in golpher\n```+ : Add one to the Char Pointer\n- : Remove one from the Char Pointer\n< : Push the character at the char pointers position onto the stack\n[+ or -,+ or -]: whatever is between the [ and ] will be multiplied together they are seperate with a ,\n= : execute the code thats on the stack\n```\n\n"+commandTag+"golpher [code] to execute a golpher program";
+	//var msg="gopher is an Esoteric Language that works on a single Char Pointer\nThere are only 4 functions in gopher\n```+ : Add one to the Char Pointer\n- : Remove one from the Char Pointer\n< : Push the character at the char pointers position onto the stack\n[+ or -,+ or -]: whatever is between the [ and ] will be multiplied together they are seperate with a ,\n= : execute the code thats on the stack\n```\n\n"+commandTag+"gopher [code] to execute a gopher program";
 	var msg = [];
 	msg[0] = "+: +1 to the char pointer";
 	msg[1] = "-: -1 from the char pointer";
@@ -304,7 +304,7 @@ function convert(txt,chan)
 		t+="<"
 	}
 	t+="=";
-	t = golpherOptim(t);
+	t = gopherOptim(t);
 	chan.value = t;
 }
 /*
@@ -575,7 +575,7 @@ function lang(txt,out)
 
 
 
-function golpherOptim(txt,chan)
+function gopherOptim(txt,chan)
 {
 	
 	var originalLength = txt.length;
