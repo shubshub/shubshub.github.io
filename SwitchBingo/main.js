@@ -25,6 +25,33 @@ var image_order = [
 	"backwards_compatible_digital"
 ]
 
+var empty_image_order = [
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty"
+]
+
 var startingLeft = 6;
 var horizontalVerticalSpacing = 6;
 var endingRight = 5;
@@ -33,7 +60,9 @@ var panelsPlaced = 0;
 var globalX = 6;
 var globalY = 89;
 var imageArray = [];
+var EmptyimageArray = [];
 var activeImageArray = [];
+var EmptyactiveImageArray = [];
 var baseLayer;
 
 var xLocation = [];
@@ -74,6 +103,13 @@ function init()
 		
 		activeImageArray[i] = document.createElement("img");
 		activeImageArray[i].src = "active/" + image_order[i] + ".png";
+		
+		
+		EmptyimageArray[i] = document.createElement("img");
+		EmptyimageArray[i].src = "panels/" + empty_image_order[i] + ".png";
+		
+		EmptyactiveImageArray[i] = document.createElement("img");
+		EmptyactiveImageArray[i].src = "active/" + empty_image_order[i] + ".png";
 	}
 }
 
@@ -107,6 +143,34 @@ function clickHandler(event)
 	}
 }
 
+function EmptyclickHandler(event)
+{
+	var canvas = document.getElementById("bingoPanel");
+	var context = canvas.getContext("2d");
+	
+	for (var i = 0; i < image_order.length; i++)
+	{
+		if (event.clientX > xLocation[i] && event.clientX < xLocation[i] + EmptyimageArray[i].width)
+		{
+			if (event.clientY > yLocation[i] && event.clientY < yLocation[i] + EmptyimageArray[i].height)
+			{
+				if(imageType[i] == 0)
+				{
+					context.drawImage(EmptyactiveImageArray[i], xLocation[i], yLocation[i]);
+					imageType[i] = 1;
+				}
+				else if (imageType[i] == 1)
+				{
+					context.drawImage(EmptyimageArray[i], xLocation[i], yLocation[i]);
+					imageType[i] = 0;
+				}
+			}
+		}
+		
+		
+	}
+}
+
 function placeAllPanels()
 {
 	var canvas = document.getElementById("bingoPanel");
@@ -124,6 +188,58 @@ function placeAllPanels()
 			
 
 			context.drawImage(imageArray[i], globalX, globalY);
+			xLocation[i] = globalX;
+			yLocation[i] = globalY;
+			imageType[i] = 0;
+			panelsPlaced+=1;
+			y = i+1;
+			if (panelsPlaced == 24)
+			{
+				y = i;
+			}
+			
+			if (panelsPlaced == 5 || panelsPlaced == 10 || panelsPlaced == 14 || panelsPlaced == 19)
+			{
+				//Change to new Row
+				globalX = 6;
+				globalY += imageArray[y].height + 6;
+			}
+			else if (panelsPlaced == 12)
+			{
+				globalX += (imageArray[y].width +6 ) + 153 + 6; //Skip the Freespace
+			}
+			else
+			{
+				globalX += imageArray[y].width + 6;
+			}
+		}
+		
+		console.log("Done");
+	});
+	
+	
+	
+	
+}
+
+
+function placeAllEmptyPanels()
+{
+	var canvas = document.getElementById("bingoPanel");
+	canvas.addEventListener("click", function(event)
+	{
+		EmptyclickHandler(event);
+	});
+	var context = canvas.getContext("2d");
+	
+	$(canvas).ready(function(){
+		context.drawImage(baseLayer, 0, 0);
+		
+		for (var i = 0; i < empty_image_order.length; i++)
+		{
+			
+
+			context.drawImage(EmptyimageArray[i], globalX, globalY);
 			xLocation[i] = globalX;
 			yLocation[i] = globalY;
 			imageType[i] = 0;
