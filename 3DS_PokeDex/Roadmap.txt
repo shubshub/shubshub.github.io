@@ -1,0 +1,7 @@
+1.1 - The Information Update
+Abilities
+Learnable Moves
+Captured Locations
+
+1.2 - Calculation Update
+Damage Calculator

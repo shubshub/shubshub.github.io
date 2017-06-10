@@ -1,44 +1,146 @@
 var mouseX;
 var mouseY;
+var _local;
+var _ability_descriptor;
+var _preloaded = 0;
+var show_list = false;
 var canvasBottom = document.getElementById("PokeDex_3DS_Bottom");
 var canvasTop = document.getElementById("PokeDex_3DS_Top");
-var version = "0.9";
-var versionNum = 9;
+if (lite_mode == false)
+{
+	var version = "1.0";
+}
+else if (lite_mode == true)
+{
+	var version = "1.0 - Lite";
+}
+var versionNum = 10;
+var previousPokemon = 0;
 var lastPokemonNum = 0;
 var lastPokemonName = "";
-var levelGlobal = 1;
+var levelGlobal = 50;
 var natureVal = 0;
 var topPageNumber = 0; //Set starting Page number to 0, Which is the Main UI for the Top Screen
 var bottomPageNumber = 0; //Set starting Page number to 0, Which is the Main UI for the Bottom Screen 
+
+var globalForme = 0;
+var previousForme = 0;
+
+var isShiny = false;
+
+var delimiter = 0;
+
+var _bottomContext = canvasBottom.getContext("2d");
+
+String.prototype.capitalize = function(){
+       return this.replace( /(^|\s)([a-z])/g , function(m,p1,p2){ return p1+p2.toUpperCase(); } );
+      };
+
 window.setInterval(function()
 {
 	window.scrollTo(0,265);
 }, 50);
-function Button(x, y, width, height, image)
+
+var _interval = window.setInterval(function(){
+	if (window.exports.hasOwnProperty("BattlePokedex"))
+	{
+		_local = exports.BattlePokedex;
+		delete exports.BattlePokedex;
+		delimiter+=1;
+	}
+	if (window.exports.hasOwnProperty("BattleAbilities"))
+	{
+		try {
+			_ability_descriptor = exports.BattleAbilities;
+		} catch(e) {
+			alert(e);
+		}
+		delete exports.BattleAbilities;
+		delimiter+=1;
+	}
+	if(delimiter == 2)
+	{
+		clearInterval(_interval);
+	}
+}
+)
+
+
+function similarity(s1, s2) {
+  var longer = s1;
+  var shorter = s2;
+  if (s1.length < s2.length) {
+    longer = s2;
+    shorter = s1;
+  }
+  var longerLength = longer.length;
+  if (longerLength == 0) {
+    return 1.0;
+  }
+  return (longerLength - editDistance(longer, shorter)) / parseFloat(longerLength);
+}
+
+function editDistance(s1, s2) {
+  s1 = s1.toLowerCase();
+  s2 = s2.toLowerCase();
+
+  var costs = new Array();
+  for (var i = 0; i <= s1.length; i++) {
+    var lastValue = i;
+    for (var j = 0; j <= s2.length; j++) {
+      if (i == 0)
+        costs[j] = j;
+      else {
+        if (j > 0) {
+          var newValue = costs[j - 1];
+          if (s1.charAt(i - 1) != s2.charAt(j - 1))
+            newValue = Math.min(Math.min(newValue, lastValue),
+              costs[j]) + 1;
+          costs[j - 1] = lastValue;
+          lastValue = newValue;
+        }
+      }
+    }
+    if (i > 0)
+      costs[s2.length] = lastValue;
+  }
+  return costs[s2.length];
+}
+
+
+function Button(x, y, width, height, sx, sy, swidth, sheight)
 {
 	this.x = x;
 	this.y = y;
+	this.sx = sx;
+	this.sy = sy;
+	this.swidth = swidth;
+	this.sheight = sheight;
 	this.width = width;
 	this.height = height;
-	this.image = image;
+	this.image = undefined;
+	this._amount = 0;
+	this.redraw = function() {
+		var context = _bottomContext;
+		context.clearRect(this.x, this.y, this.width, this.height);
+		context.drawImage(_spriteSheet, this.sx, this.sy, this.swidth, this.sheight, this.x, this.y, this.width, this.height);
+	}
 }
+
+var _spriteSheet = new Image();
+
 function buttonPlace(thisButton)
 {
-	var canvas = canvasBottom
-	var context = canvas.getContext('2d');
-	var imageSource = thisButton.image;
-	var imageObj = new Image();
-	imageObj.onload = function()
-	{
-		context.drawImage(imageObj, thisButton.x, thisButton.y);
-	};
-	imageObj.src = imageSource;
+	//var canvas = canvasBottom
+	//var context = canvas.getContext('2d');
+	var context = _bottomContext;
+	context.drawImage(_spriteSheet, thisButton.sx, thisButton.sy, thisButton.swidth, thisButton.sheight, thisButton.x, thisButton.y, thisButton.width, thisButton.height);
 }
 
 function changePage()
 {
 	var dropdownID = document.getElementById("other_data_dropdown");
-	pageVal = dropdownID.options[dropdownID.selectedIndex].value;
+	var pageVal = dropdownID.options[dropdownID.selectedIndex].value;
 	topPageNumber = parseInt(pageVal);
 	bottomPageNumber = parseInt(pageVal);
 	bottomUIhandler();
@@ -60,20 +162,21 @@ function getPosition(event) {
     y -= canvasElement.offsetTop;
     x = x - window.pageXOffset;
     y = y - window.pageYOffset;
-	if (navigator.userAgent.indexOf('New Nintendo 3DS') != -1) //New Nintendo 3DS not Supported Yet
+	if (navigator.userAgent.indexOf('New Nintendo 3DS') != -1)
 	{
 		y+=529;
 	}
     mouseX = x;
     mouseY = y;
 	//Check to see if a Button has been pressed
-	checkButtonClick(kantoButton,0);
-	checkButtonClick(johtoButton,1);
-	checkButtonClick(hoennButton,2);
-	checkButtonClick(sinnohButton,3);
-	checkButtonClick(unovaButton,4);
-	checkButtonClick(kalosButton,5);
+	//checkButtonClick(kantoButton,0);
+	//checkButtonClick(johtoButton,1);
+	//checkButtonClick(hoennButton,2);
+	//checkButtonClick(sinnohButton,3);
+	//checkButtonClick(unovaButton,4);
+	//checkButtonClick(kalosButton,5);
 	//checkButtonClick(mpoButton,6);
+	
 	checkButtonClick(changelogButton,7);
 	checkButtonClick(aboutButton,8);
 	checkButtonClick(creditsButton,9);
@@ -81,21 +184,44 @@ function getPosition(event) {
 	checkButtonClick(ivButton,11);
 	checkButtonClick(levelButton,12);
 	checkButtonClick(natureButton,13);
+	
+	
 	//checkButtonClick(otherdataButton,14);
 	if (bottomPageNumber == 1)
 	{
 		checkButtonClick(gameSelectButton,15);
 	}
 	checkButtonClick(searchPokemonButton,16);
+	checkButtonClick(formeButton, 17);
+	checkButtonClick(regionButton, 18);
+	checkButtonClick(evolutionsButton, 19);
+	checkButtonClick(refreshUIButton, 20);
+	checkButtonClick(shiny_enable_button, 21);
+	checkButtonClick(abilityButton, 22);
 }
 
 window.showState = function (elementId) {
     var dropdown = document.getElementById(elementId);
-    var event;
-    event = document.createEvent('MouseEvents');
-    event.initMouseEvent('mousedown', true, true, window);
-    dropdown.dispatchEvent(event);
+    var _evt;
+    _evt = document.createEvent('MouseEvents');
+    _evt.initMouseEvent('mousedown', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+	_evt.onerror = function(e) {
+		alert(e);
+	}
+	dropdown.onerror = function(e) {
+		alert(e);
+	}
+    var _status = dropdown.dispatchEvent(_evt);
+
+	
+	//alert(_status); 
 }
+
+function displayPokemon()
+{
+	showState('dropdown_table');
+}
+
 function checkButtonClick(thisButton,buttonType)
 {
 	buttonX = thisButton.x;
@@ -127,11 +253,18 @@ function checkButtonClick(thisButton,buttonType)
 	14: Other Data Button
 	15: Game Select Button
 	16: Search Pokemon Button
+	17: Select Forme Button
+	18: Region Select Button
+	19: List Evolutions
+	20: Refresh UI
+	21: Shiny Button
+	22: Ability Button
 	*/
 		switch(buttonType)
 		{
 			case 0:
-				showState('dropdown_dex');
+				//showState('dropdown_dex');
+				
 				break;
 			case 1:
 				showState('dropdown_johto');
@@ -170,7 +303,7 @@ function checkButtonClick(thisButton,buttonType)
 				getLevel();
 				break;
 			case 13:
-				showState('nature_dropdown');
+				showState('alt_nature');
 				break;
 			case 14:
 				showState('other_data_dropdown');
@@ -181,6 +314,24 @@ function checkButtonClick(thisButton,buttonType)
 			case 16:
 				searchPokemon();
 				break;
+			case 17:
+				changeFormes();
+				break;
+			case 18:
+				showState('dropdown_regions');
+				break;
+			case 19:
+				getEvolutions();
+				break;
+			case 20:
+				refreshUI();
+				break;
+			case 21:
+				enableShiny(shiny_enable_button);
+				break;
+			case 22:
+				populateAbility();
+				break;
 			default:
 				alert("Something went wrong =/");
 				break;
@@ -188,97 +339,202 @@ function checkButtonClick(thisButton,buttonType)
 	}
 }
 
+function refreshUI()
+{
+	DrawUI(lastPokemonNum,lastPokemonName, parseInt(globalForme));
+	bottomUIhandler();
+	
+}
+
+function enableShiny(_button)
+{
+	switch(isShiny)
+	{
+		case false:
+			isShiny = true;
+			_button.sx = 115;
+			_button.sy = 169;
+			break;
+		case true:
+			isShiny = false;
+			_button.sx = 225;
+			_button.sy = 50;
+			break;
+	}
+	_button.redraw();
+	DrawUI(lastPokemonNum,lastPokemonName, parseInt(globalForme));
+	
+}
+
+function pushEvolution(_input, _dex)
+{
+	var output = _input;
+	output.push({dex: parseInt(_dex), name: getPokemon(parseInt(_dex))})
+	return output;
+}
+
+
+
+function populateAbility()
+{
+	if(lastPokemonNum == 0)
+	{
+		alert("No known abilities!");
+		return;
+	}
+	var _ability_element = document.getElementById("dropdown_ability");
+	var _db = _local[getPokemon(lastPokemonNum).toLowerCase()];
+	if (globalForme > 0)
+	{
+		_db = _local[_db.otherFormes[globalForme-1]];
+	}
+	var _abilities = _db.abilities;
+	while(_ability_element.firstChild)
+	{
+		_ability_element.removeChild(_ability_element.firstChild);
+	}
+	_key_store = Object.getOwnPropertyNames(_abilities);
+	for (_keys in _abilities)
+	{
+		if (_key_store.length == 1)
+		{
+			var _opt2 = document.createElement("option");
+			_opt2.setAttribute("value", -1);
+			_opt2.innerText = "---";
+			_ability_element.appendChild(_opt2);	
+		}
+		var _opt = document.createElement("option");
+		_opt.setAttribute("value", _keys);
+		_opt.innerText = _abilities[_keys];
+		_ability_element.appendChild(_opt);
+	}
+	_ability_element.value = -4;
+	try {
+		showState("dropdown_ability");
+	} catch(e) {
+		alert(e);
+	}
+	
+}
+
+function showDescription(_element)
+{
+	var _e = document.getElementById(_element);
+	if (_e[_e.selectedIndex].value == -1)
+	{
+		return;
+	}
+	alert(_ability_descriptor[_e[_e.selectedIndex].innerText.split(" ").join("").toLowerCase()].shortDesc);
+	_e.selectedIndex = -1;
+}
+
+function populateList(input)
+{
+	
+	var _dex = [];
+	var maxMins = {	kanto: [1, 151], johto: [152, 251], hoenn: [252, 386], sinnoh: [387, 493],  unova: [494, 649], kalos: [650, 721], alola: [722, 802]	}
+	var _min = maxMins[input][0];
+	var _max = maxMins[input][1];
+	
+	var list = new Array(_max - (_min - 1));
+	list.fill(0);
+	
+	list.filter(function(_val, _index, _array) {
+		_array[_index] = getPokemon(_index + _min);
+		_dex.push(_index + _min);
+	});
+	
+	var drpdwn = document.getElementById("dropdown_table");
+	while (drpdwn.firstChild) 
+	{
+		drpdwn.removeChild(drpdwn.firstChild);
+	}
+	for (var i = 0; i < list.length; i++)
+	{
+		
+		var opt = document.createElement("option");
+		opt.setAttribute("value", _dex[i]);
+		opt.innerText = list[i].capitalize();
+		drpdwn.appendChild(opt);
+	}
+	drpdwn.value = lastPokemonNum;
+	try {
+		showState("dropdown_table");
+	} catch (e) {
+		alert(e);
+	}	
+}
+
+function showRegion(elementId)
+{
+	if(old_3ds)
+	{
+		alert("This feature is not currently supported on Old 3DS");
+		return;
+	}
+	var e = document.getElementById(elementId);
+	var value = e.options[e.selectedIndex].value;
+	var text = e.options[e.selectedIndex].text;
+	populateList(value);
+	//displayPokemon();
+	e.selectedIndex = -1;
+	if (old_3ds == true)
+	{
+		alert("Due to the way o3DS works tap on the screen after this message to display the Pokemon List");
+		show_list = true;
+	}
+	//globalForme = parseInt(value);
+}
+
+function changeFormes()
+{
+	var numFormes = countForme(lastPokemonNum);
+	var formeElement = document.getElementById("dropdown_formes");
+	while (formeElement.firstChild) 
+	{
+		formeElement.removeChild(formeElement.firstChild);
+	}
+
+	if (numFormes == 0)
+	{
+		alert("There are no alternate Formes for this Pokémon");
+		return;
+	}
+	for (var i = 0; i < numFormes; i++)
+	{
+		
+		var opt = document.createElement("option");
+		opt.setAttribute("value", i);
+		opt.innerText = getForme(lastPokemonNum, i).capitalize();
+		if (opt.innerText == "")
+		{
+			opt.innerText = "Regular";
+		}
+		formeElement.appendChild(opt);
+	}
+	formeElement.selectedIndex = globalForme;
+	showState('dropdown_formes');
+}
+
 function searchPokemon()
 {
+	
+	var minimumPercentage = 0.8;
+	
 	var pokemonFound = 0;
+	var temp_dex = 0;
+	var temp_name = "";
 	var pokemonID = prompt("Search Pokémon by Number or Name","");
 	var pokemonTemp = parseInt(pokemonID);
 	if (isNaN(pokemonTemp))
 	{
 		//Assume is Name and cycle through each dropdown list
-		var kanto = document.getElementById("dropdown_dex").getElementsByTagName("option");
-		var johto = document.getElementById("dropdown_johto").getElementsByTagName("option");
-		var hoenn = document.getElementById("dropdown_hoenn").getElementsByTagName("option");
-		var sinnoh = document.getElementById("dropdown_sinnoh").getElementsByTagName("option");
-		var unova = document.getElementById("dropdown_unova").getElementsByTagName("option");
-		var kalos = document.getElementById("dropdown_kalos").getElementsByTagName("option");
-		if (pokemonFound !=1)
+		temp_dex = getPokemon(pokemonID);
+		if (temp_dex !=0)
 		{
-			for (var i = 0; i<kanto.length; i++)
-			{
-				if(kanto[i].text.toLowerCase() == pokemonID.toLowerCase())
-				{
-					pokemonFound = 1;
-					lastPokemonNum = kanto[i].value;
-					lastPokemonName = kanto[i].text;
-					break;
-				}
-			}
-		}
-		if (pokemonFound !=1)
-		{
-			for (var i = 0; i<johto.length; i++)
-			{
-				if(johto[i].text.toLowerCase() == pokemonID.toLowerCase())
-				{
-					pokemonFound = 1;
-					lastPokemonNum = johto[i].value;
-					lastPokemonName = johto[i].text;
-					break;
-				}
-			}
-		}
-		if (pokemonFound !=1)
-		{
-			for (var i = 0; i<hoenn.length; i++)
-			{
-				if (hoenn[i].text.toLowerCase() == pokemonID.toLowerCase())
-				{
-					pokemonFound = 1;
-					lastPokemonNum = hoenn[i].value;
-					lastPokemonName = hoenn[i].text;
-					break;
-				}
-			}
-		}
-		if (pokemonFound !=1)
-		{
-			for (var i= 0; i<sinnoh.length; i++)
-			{
-				if (sinnoh[i].text.toLowerCase() == pokemonID.toLowerCase())
-				{
-					pokemonFound = 1;
-					lastPokemonNum = sinnoh[i].value;
-					lastPokemonName = sinnoh[i].text;
-					break;
-				}
-			}
-		}
-		if (pokemonFound !=1)
-		{
-			for (var i=0; i<unova.length; i++)
-			{
-				if (unova[i].text.toLowerCase() == pokemonID.toLowerCase())
-				{
-					pokemonFound = 1;
-					lastPokemonNum = unova[i].value;
-					lastPokemonName = unova[i].text;
-					break;
-				}
-			}
-		}
-		if (pokemonFound !=1)
-		{
-			for (var i=0; i<kalos.length; i++)
-			{
-				if (kalos[i].text.toLowerCase() == pokemonID.toLowerCase())
-				{
-					pokemonFound = 1;
-					lastPokemonNum = kalos[i].value;
-					lastPokemonName = kalos[i].text;
-					break;
-				}
-			}
+			pokemonFound = 1;
+			lastPokemonNum = temp_dex;
+			lastPokemonName = getPokemon(lastPokemonNum);
 		}
 		if (pokemonFound !=1)
 		{
@@ -286,40 +542,20 @@ function searchPokemon()
 		}
 		if (pokemonFound == 1)
 		{
-			DrawUI(lastPokemonNum,lastPokemonName);
+			DrawUI(lastPokemonNum,lastPokemonName, globalForme);
 		}
 	}
 	else
 	{
-		if ((pokemonTemp > 0) && (pokemonTemp <= 721))
+		if ((pokemonTemp > 0) && (pokemonTemp <= 802))
 		{
 			lastPokemonNum = pokemonTemp;
-			if(pokemonTemp <=151)
+			temp_name = getPokemon(pokemonTemp);
+			if (temp_name != "")
 			{
-				idName = "dropdown_dex";
+				returnName(pokemonTemp, globalForme);
+				DrawUI(lastPokemonNum,lastPokemonName, globalForme);
 			}
-			else if (pokemonTemp <=252)
-			{
-				idName = "dropdown_johto";
-			}
-			else if (pokemonTemp <=386)
-			{
-				idName = "dropdown_hoenn";
-			}
-			else if (pokemonTemp <=493)
-			{
-				idName = "dropdown_sinnoh";
-			}
-			else if (pokemonTemp <=649)
-			{
-				idName = "dropdown_unova";
-			}
-			else if (pokemonTemp <=721)
-			{
-				idName = "dropdown_kalos";
-			}
-			var getName = document.getElementById(idName).getElementsByTagName("option");
-			returnName(pokemonTemp);
 			
 		}
 		else
@@ -339,7 +575,7 @@ function showCredits()
 	alert("Web Pokédex Credits");
 	alert("Programming\nShubshub");
 	alert("Bug Testing\\UI Design\nElyosOfTheAbyss");
-	alert("Kalos Pokémon Sprites\nSerebii\nhttp://www.serebii.net/")
+	alert("Pokémon Sprites and Stat Data from Pokémon Showdown");
 	alert("New 3DS Support Testing\nElyosOfTheAbyss\nSil3nt Pr0digy");
 }
 
@@ -358,7 +594,21 @@ function showChangelog()
 	changelogText[5] = "v0.6 - All Kalos Pokémon added except Hoopa, Diancie and Volcanion\nAwesome Looking User Interface Courtesy of ElyosOfTheAbyss\nOther Minor Bug Fixes\nStable enough to balance a fork on now\nWe Apologize for the Slow Loading Times not much we can do";
 	changelogText[6] = "v0.7 - Added Natures, Levels, IVs, EVs, Actual Stat Display, A few more MPO Images, Bug Fixes, Diance Volcanion and Hoopa are now added, Stable enough to keep a Horse in now!";
 	changelogText[7] = "v0.8 - NEW 3DS SUPPORT!\nCan now choose to set All IVs to 31 or to 0";
-	changelogText[8] = "v0.9 - Added Quick Find Button for easy Pokémon searching\nThe selected Pokémon's types are now displayed in the top right corner as well"
+	changelogText[8] = "v0.9 - Added Quick Find Button for easy Pokémon searching\nThe selected Pokémon's types are now displayed in the top right corner as well";
+	
+	changelogText[9] = [];
+	changelogText[9][0] = "v1.0 - THE BIG UPDATE";
+	changelogText[9][1] = "Fixed bug with changing natures setting the Pokémon's name to undefined";
+	changelogText[9][2] = "Added all Alola Pokémon and Formes";
+	changelogText[9][3] = "Changed the UI layout on the bottom to allow for more button space by moving regions into their own dropdown selector";
+	changelogText[9][4] = "Added a new Evolution button to list a Pokémon's evolutions and to jump to one of them";
+	changelogText[9][5] = "Changed the way searching by name works so now it allows for minimal spelling mistakes IE: Feraligater now returns Feraligatr";
+	changelogText[9][6] = "Made the changelog way easier to read for when there is a big changelog";
+	changelogText[9][7] = "Added Shiny Pokémon";
+	changelogText[9][8] = "Replaced jQuery with a custom lib that is smaller and only has what we need";
+	changelogText[9][9] = "Literally every single image now added";
+	changelogText[9][10] = "Literally all the stats for every Pokémon/Forme";
+	changelogText[9][11] = "So much stability your 3DS literally sits up right in mid air";
 	//Changelog End
 	
 	
@@ -367,75 +617,150 @@ function showChangelog()
 	alert("Changes since last version");
 	if (answer)
 	{
-		for (var i = 0; i<changelogText.length; i++)
+		for (var i = 0; i < changelogText.length; i++)
 		{
-			alert(changelogText[i]);
+			if (changelogText[i].constructor == Array)
+			{
+				for (var j = 0; j < changelogText[i].length; j++)
+				{
+					alert(changelogText[i][j]);
+				}
+			}
+			else
+			{
+				alert(changelogText[i]);
+			}
 		}
 	}
 	else
 	{
-		
-		alert(changelogText[changelogText.length-1]);	
+		if (changelogText[changelogText.length-1].constructor == Array)
+		{
+			for (var j = 0; j < changelogText[changelogText.length-1].length; j++)
+			{
+				alert(changelogText[changelogText.length-1][j]);
+			}
+		}
+		else
+		{
+			alert(changelogText[changelogText.length-1]);
+		}			
 	}
 	
 }
 function bottomUIhandler()
 {
 	var bottomUI = new Image();
-	var bottomContext = canvasBottom.getContext('2d');
+	var bottomContext = _bottomContext;
 	bottomContext.clearRect(0,0,canvasBottom.width,canvasBottom.height);
 	bottomUI.onload = function()
 	{
 		bottomContext.drawImage(bottomUI,0,0);
-		buttonPlace(kantoButton)
-		buttonPlace(johtoButton);
-		buttonPlace(hoennButton);
-		buttonPlace(sinnohButton);
-		buttonPlace(unovaButton);
-		buttonPlace(kalosButton);
-		//buttonPlace(otherdataButton);
-		//buttonPlace(mpoButton); //MPO Button removed Temporarily until its a finished feature
-		buttonPlace(changelogButton);
-		buttonPlace(aboutButton);
-		buttonPlace(creditsButton);
-		buttonPlace(evButton);
-		buttonPlace(ivButton);
-		buttonPlace(levelButton);
-		buttonPlace(natureButton);
-		if (bottomPageNumber == 1)
+		if (_preloaded == 0)
 		{
-			buttonPlace(gameSelectButton);
+			_spriteSheet.src = "./images/UI/button_sprite_sheet.png";
+			_spriteSheet.onload = function() {
+				buttonPlace(refreshUIButton);
+				buttonPlace(shiny_enable_button);
+				//buttonPlace(kantoButton)
+				//buttonPlace(johtoButton);
+				//buttonPlace(hoennButton);
+				//buttonPlace(sinnohButton);
+				//buttonPlace(unovaButton);
+				//buttonPlace(kalosButton);
+				//buttonPlace(otherdataButton);
+				//buttonPlace(mpoButton); //MPO Button removed Temporarily until its a finished feature
+				buttonPlace(abilityButton);
+				buttonPlace(changelogButton);
+				buttonPlace(aboutButton);
+				buttonPlace(creditsButton);
+				buttonPlace(evButton);
+				buttonPlace(ivButton);
+				buttonPlace(levelButton);
+				buttonPlace(natureButton);
+				buttonPlace(evolutionsButton);
+				buttonPlace(regionButton);
+				buttonPlace(formeButton);
+				if (bottomPageNumber == 1)
+				{
+					buttonPlace(gameSelectButton);
+				}
+				buttonPlace(searchPokemonButton);
+				_preloaded = 1;
+			}
 		}
-		buttonPlace(searchPokemonButton);
+		else
+		{
+			buttonPlace(refreshUIButton);
+			buttonPlace(shiny_enable_button);
+			//buttonPlace(kantoButton)
+			//buttonPlace(johtoButton);
+			//buttonPlace(hoennButton);
+			//buttonPlace(sinnohButton);
+			//buttonPlace(unovaButton);
+			//buttonPlace(kalosButton);
+			//buttonPlace(otherdataButton);
+			//buttonPlace(mpoButton); //MPO Button removed Temporarily until its a finished feature
+			buttonPlace(abilityButton);
+			buttonPlace(changelogButton);
+			buttonPlace(aboutButton);
+			buttonPlace(creditsButton);
+			buttonPlace(evButton);
+			buttonPlace(ivButton);
+			buttonPlace(levelButton);
+			buttonPlace(natureButton);
+			buttonPlace(evolutionsButton);
+			buttonPlace(regionButton);
+			buttonPlace(formeButton);
+			if (bottomPageNumber == 1)
+			{
+				buttonPlace(gameSelectButton);
+			}
+			buttonPlace(searchPokemonButton);
+		}
 	}
-	bottomUI.src = './images/UI/background/bottomUI.png';
+	bottomUI.src = './images/UI/background/bottomUI_new.png';
 	
 
 }
 var ctx = canvasBottom.getContext("2d");
 
 //All the Buttons must be Instantiated here
-var kantoButton = new Button(7,59,64,24,'./images/UI/buttons/clickButton.png');
+/*var kantoButton = new Button(7,59,64,24,'./images/UI/buttons/clickButton.png');
 var johtoButton = new Button(71,59,64,24,'./images/UI/buttons/Johot.png');
 var hoennButton = new Button(135,59,64,24,'./images/UI/buttons/Hoenn.png');
 var sinnohButton = new Button(199,59,64,24,'./images/UI/buttons/Sinnoh.png');
 var unovaButton = new Button(263,59,64,24,'./images/UI/buttons/Unova.png');
 var kalosButton = new Button(327,59,64,24,'./images/UI/buttons/Kalos.png');
 var otherdataButton  = new Button(138,89,122,24,'./images/UI/buttons/otherDataButton.png');
-var gameSelectButton = new Button(278,89,122,24,'./images/UI/buttons/gameSelectButton.png');
-var searchPokemonButton = new Button(0,89,122,24,'./images/UI/buttons/searchPokeButton.png');
+var gameSelectButton = new Button(278,89,122,24,'./images/UI/buttons/gameSelectButton.png');*/
+var refreshUIButton = new Button(374, 0, 24, 24, 65, 207, 24, 24);
+var shiny_enable_button = new Button(0,0, 24, 24, 225, 50, 24, 24);
+
+var searchPokemonButton = new Button(0,29,122,24, 130, 25, 122, 24);
+
+
+var regionButton = new Button(0, 59, 86, 24, 123, 75, 94, 24);
+var formeButton = new Button(0, 89, 86, 24, 123, 100, 86, 24);
+var abilityButton = new Button(312, 59, 86, 24, 130, 50, 94, 24);
+
 
 //Left Sidebar
-var changelogButton = new Button(0,225,128,16,'./images/UI/buttons/changelog.png');
-var aboutButton = new Button(0,207,128,16,'./images/UI/buttons/about.png');
-var creditsButton = new Button(0,189,128,16,'./images/UI/buttons/credits.png');
+var changelogButton = new Button(0,225,129,18, 0, 19, 129, 18);
+var aboutButton = new Button(0,207,129,18, 0, 0, 129, 18);
+var creditsButton = new Button(0,189,129,18, 0, 38, 129, 18);
 
 //Right Sidebar
-var mpoButton = new Button(352,225,49,18,'./images/UI/buttons/mpo_download.png');
-var evButton = new Button(352,207,49,18,'./images/UI/buttons/EVbutton.png');
-var ivButton = new Button(352,189,49,18,'./images/UI/buttons/IVbutton.png');
-var levelButton = new Button(352,171,49,18,'./images/UI/buttons/levelButton.png');
-var natureButton = new Button(352,153,49,18,'./images/UI/buttons/natureButton.png');
+var mpoButton = new Button(352,225,49,18, 65, 145, 49, 18);
+var evButton = new Button(352,207,49,18, 65, 150, 49, 18);
+var ivButton = new Button(352,189,49,18, 65, 169, 49, 18);
+var levelButton = new Button(352,171,49,18, 65, 188, 49, 18);
+var natureButton = new Button(352,153,49,18, 115, 150, 49, 18);
+var evolutionsButton = new Button(276,29,122,24, 0, 82, 122, 24);
+
+
+
+
 
 bottomUIhandler();
 
@@ -458,7 +783,7 @@ function DrawStatWord()
 function DrawStatWord_Stats(value)
 {
 	ctx_Top.font = "15px Arial";
-	getStats(value);
+	getLocalStats(value, globalForme);
 }
 function getNature(natureID)
 {
@@ -562,17 +887,48 @@ function returnStringVal(value)
 	
 	return textString;
 }
-function DrawUI(value,text)
+
+
+
+
+function DrawUI(value,text, forme)
 {
+	
 	//This function handles everything to do with the User Interface on the Top Screen
-	topCanvasCTX = canvasTop.getContext('2d');
-	bottomCanvasCTX = canvasBottom.getContext('2d');
+	var topCanvasCTX = canvasTop.getContext('2d');
+	var bottomCanvasCTX = canvasBottom.getContext('2d');
 	
 	var use = value
 	var imageObj = new Image();
 	var topCanvasUI = new Image();
 	var bottomCanvasUI = new Image();
 	lastPokemonName = text;
+
+	if (lastPokemonNum != previousPokemon)
+	{
+		globalForme = 0;
+		forme = 0;
+		text = getPokemon(value);
+		console.log("Forme has Changed");
+	}
+	if (globalForme != previousForme)
+	{
+		text = returnName(value, globalForme);
+		previousForme = globalForme;
+	}
+	
+	previousPokemon = lastPokemonNum;
+	if (typeof getForme != 'undefined')
+	{
+		var thisForme = getForme(value, forme);
+	}
+	else
+	{
+		var thisForme = "";
+	}
+	//alert(thisForme);
+	//alert(thisForme);
+	
 	switch(topPageNumber)
 	{
 		case 0:
@@ -587,14 +943,14 @@ function DrawUI(value,text)
 				
 				ctx_Top.stroke();
 				ctx_Top.stroke();
-				document.getElementById("mpo_download").href = './images/mpo/'+use+'.mpo';
-				var nature = document.getElementById("nature_dropdown");
+				//document.getElementById("mpo_download").href = './images/mpo/'+use+'.mpo';
+				var nature = document.getElementById("alt_nature");
 				natureVal = nature.options[nature.selectedIndex].value;
 				var natureString = getNature(natureVal);
 				ctx_Top.font = "15px Arial";
 				
 				//8, 40
-				enableAllGames();
+				//enableAllGames();
 				if ((use !=0) && !(isNaN(use)))
 				{
 					ctx_Top.fillText(natureString,35,215);
@@ -607,20 +963,63 @@ function DrawUI(value,text)
 					ctx_Top.fillStyle = 'white';
 					imageObj.onload = function() 
 					{
-						topCanvasCTX.drawImage(imageObj, 15, 77,96,96);
+						if (thisForme == "alola" && value == 103)
+						{
+							topCanvasCTX.drawImage(imageObj, 15, 77 - (imageObj.height - 96),96, imageObj.height);
+						}
+						else
+						{
+							topCanvasCTX.drawImage(imageObj, 15, 77,96,96);
+						}
 					};
 
 				}
-					ctx_Top.fillStyle = 'black';
-					DrawStatWord_Stats(use);
+				ctx_Top.fillStyle = 'black';
+				if (use != undefined)
+				{
+					if (thisForme != "" && thisForme != undefined)
+					{
+						//alert("Formay");
+						DrawStatWord_Stats(use);
+					}
+					else
+					{
+						//alert("No Forme");
+						DrawStatWord_Stats(use);
+					}
+				}
 				
 				
 				
 				
 			}
 			
-			topCanvasUI.src = './images/UI/background/TopUI.png';
-			imageObj.src = './images/pokemon/'+value+'.png';
+			topCanvasUI.onerror = function() {
+				this.src = "";
+				this.src = './images/UI/background/TopUI_new.png';
+			}
+			
+			topCanvasUI.src = './images/UI/background/TopUI_new.png';
+			if (value != undefined)
+			{
+				var _temp = value;
+				if (isShiny)
+				{
+					_temp = "new_shiny/" + value;
+				}
+				else
+				{
+					_temp = "new_sprites/" + value;
+				}
+				if (thisForme != "" && thisForme != undefined)
+				{
+					imageObj.src = './images/pokemon/'+_temp+'-'+thisForme+'.png';
+				}
+				else
+				{
+					imageObj.src = './images/pokemon/'+_temp+'.png';
+				}
+			}
 			break;
 			//Case End
 		case 1:
@@ -646,6 +1045,11 @@ function DrawUI(value,text)
 				}
 				ctx_Top.fillText("???",250,59);
 				ctx_Top.fillStyle = 'white';
+			}
+			
+			topCanvasUI.onerror = function() {
+				this.src = "";
+				this.src = './images/UI/background/TopUI.png';
 			}
 			break;
 			//Case End
@@ -704,7 +1108,7 @@ function disableGameSelect(pokemonID)
 
 function getLevel()
 {
-	var levelPrompt = prompt("Set Pokemon Level 1-100","1");
+	var levelPrompt = prompt("Set Pokémon Level 1-100","1");
 	if (levelPrompt !=null)
 	{
 		levelPrompt = parseInt(levelPrompt);
@@ -727,15 +1131,40 @@ function updatePokemon(elementId)
 	var text = e.options[e.selectedIndex].text;
 	lastPokemonNum = value;
 	lastPokemonName = text;
-	DrawUI(value,text);
+	if (lastPokemonNum != previousPokemon)
+	{
+		globalForme = 0;
+		console.log("Forme has Changed");
+	}
+	previousPokemon = lastPokemonNum;
+	e.selectedIndex = 0;
+	if (countForme(lastPokemonNum) > 0)
+	{
+		DrawUI(lastPokemonNum,lastPokemonName, parseInt(globalForme));
+	}
+	else
+	{
+		DrawUI(lastPokemonNum,lastPokemonName);
+	}
+	
+}
+
+function updateFormes(elementId)
+{
+	var e = document.getElementById(elementId);
+	var value = e.options[e.selectedIndex].value;
+	var text = e.options[e.selectedIndex].text;
+	globalForme = parseInt(value);
+	lastPokemonName = returnName(lastPokemonNum, globalForme);
+	//alert(globalForme);
+	DrawUI(lastPokemonNum,lastPokemonName, globalForme);
 }
 function updateTop(value,text)
 {
 	//This Function is Useful for updating the UI without changing the Pokemon
 	if (value !=0)
 	{
-		DrawUI(value,text);
+		DrawUI(value,text, globalForme);
 	}
 }
-
 

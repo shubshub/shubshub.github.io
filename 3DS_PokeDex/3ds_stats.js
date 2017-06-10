@@ -1,9 +1,11 @@
 //Class Structure for the Pokemon Stats
 //Nintendo 3DS Browser doesn't support Classes
-var statsArray = new Array(6);
+var statsArray = new Array(7);
 var ivArray = new Array(0,0,0,0,0,0);
 var evArray = new Array(0,0,0,0,0,0);
 var natureMod = new Array(5);
+var colorArray = new Array(5);
+colorArray.fill("white");
 var healthIV = 0;
 var attackIV = 0;
 var defenseIV = 0;
@@ -16,19 +18,73 @@ var defenseEV = 0;
 var specialAtkEV = 0;
 var specialDefEV = 0;
 var speedEV = 0;
+
+function add(a, b) {
+    return a + b;
+}
+
+function getLocalStats(_dex, _forme)
+{
+	try {
+	if (_dex == 0)
+	{
+		return;
+	}
+	//_local = exports.BattlePokedex;
+	var _name = getPokemon(parseInt(_dex));
+	if (typeof _name == "number")
+	{
+		_name = getPokemon(_name);
+	}
+	var _poke = {};
+	if (_forme > 0)
+	{
+		var _tempHold = _local[_name.toLowerCase()];
+		var _temp = _tempHold.otherFormes[_forme-1].toLowerCase();
+		_poke = _local[_temp];
+	}
+	else if (_forme == 0)
+	{
+		_poke = _local[_name.toLowerCase()];
+	}
+	statsArray[0] = _poke.baseStats.hp;
+	statsArray[1] = _poke.baseStats.atk;
+	statsArray[2] = _poke.baseStats.def;
+	statsArray[3] = _poke.baseStats.spa;
+	statsArray[4] = _poke.baseStats.spd;
+	statsArray[5] = _poke.baseStats.spe;
+	statsArray[6] = 0;
+	var _baseStats = statsArray.reduce(add, 0);
+	statsArray[6] = _baseStats;
+	drawType(_poke.types);
+	drawStats();
+	} catch(e) {
+		alert("There was a problem");
+		alert(e);
+	}
+}
+
+
 function getStats(pokedex) 
 {
- $.getJSON("./jsonData/"+pokedex+".json", function(json)
+ var _obj = new JSONObject("./jsonData/"+pokedex+".json", function(json)
  {
-	
+	console.log(json);
 	statsArray[0] = json.hp;
 	statsArray[1] = json.attack;
 	statsArray[2] = json.defense;
 	statsArray[3] = json.sp_atk;
 	statsArray[4] = json.sp_def;
 	statsArray[5] = json.speed;
+	statsArray[6] = 0;
+	var _baseStats = statsArray.reduce(add, 0);
+	statsArray[6] = _baseStats;
 	drawType(json.types);
 	drawStats();
+ }, function(e) {
+	 console.log(e);
+ }, function(e){
+	alert(e);
  });
  
 }
@@ -50,7 +106,7 @@ function drawType(typeArray)
 	}
 	for (var i = 0; i < typeArray.length; i++)
 	{
-		typeNames[i] = typeArray[i].name;
+		typeNames[i] = typeArray[i].toLowerCase();
 		switch(typeNames[i])
 		{
 			case "normal":
@@ -116,13 +172,44 @@ function drawType(typeArray)
 	}
 }
 
-function returnName(pokedex)
+
+
+function returnName(pokedex, forme)
 {
-	$.getJSON("./jsonData/"+pokedex+".json",function(json)
+	//alert(pokedex);
+	var _name = getPokemon(parseInt(pokedex));
+	//alert(_name);
+	if (typeof _name == "number")
 	{
-		DrawUI(lastPokemonNum,json.name);
+		_name = getPokemon(_name);
+	}
+	var _poke = {};
+	if (forme > 0)
+	{
+		var _tempHold = _local[_name.toLowerCase()];
+		var _temp = _tempHold.otherFormes[forme-1].toLowerCase();
+		_poke = _local[_temp];
+	}
+	else if (forme == 0)
+	{
+		_poke = _local[_name.toLowerCase()];
+	}
+	lastPokemonName = _poke.species;
+	return _poke.species;
+	/*var _obj = new JSONObject("./jsonData/"+name+".json",function(json)
+	{
+		console.log(json.name);
+		if (formay != "")
+		{
+			DrawUI(lastPokemonNum,json.name, forme);
+		}
+		else
+		{
+			DrawUI(lastPokemonNum,json.name);
+		}
+		
 		return json.name;
-	});
+	});*/
 }
 function updateIVs()
 {
@@ -270,7 +357,7 @@ function updateIVs()
 	ivArray[4] = specialDefIV;
 	ivArray[5] = speedIV;
 	f.selectedIndex = 0;
-	updateTop(lastPokemonNum);
+	updateTop(lastPokemonNum, lastPokemonName);
 }
 
 function updateEVs()
@@ -395,14 +482,28 @@ function updateEVs()
 			break;
 			
 	}
-	evArray[0] = healthEV;
-	evArray[1] = attackEV;
-	evArray[2] = defenseEV;
-	evArray[3] = specialAtkEV;
-	evArray[4] = specialDefEV;
-	evArray[5] = speedEV;
+	var _total = healthEV + attackEV + defenseEV + specialAtkEV + specialDefEV + speedEV;
+	if (_total <= 510)
+	{
+		if(healthEV > 252 || attackEV > 252 || defenseEV > 252 || specialAtkEV > 252 || specialDefEV > 252 || speedEV > 252)
+		{
+			alert("A Single EV Stat can not exceed 252");
+			return;
+		}
+		evArray[0] = healthEV;
+		evArray[1] = attackEV;
+		evArray[2] = defenseEV;
+		evArray[3] = specialAtkEV;
+		evArray[4] = specialDefEV;
+		evArray[5] = speedEV;
+	}
+	else
+	{
+		alert("EV Total can not be higher than 510!");
+		return;
+	}
 	f.selectedIndex = 0;
-	updateTop(lastPokemonNum);
+	updateTop(lastPokemonNum, lastPokemonName);
 }
 
 
@@ -417,6 +518,7 @@ function drawStats()
 	ctx_Top.fillText(statsArray[3],230,170); //Sp. Atk
 	ctx_Top.fillText(statsArray[4],230,186); //Sp. Def
 	ctx_Top.fillText(statsArray[5],230,203); //Speed
+	ctx_Top.fillText(statsArray[6],230,219); //Base Stat Total
 	drawActualStats(levelGlobal,natureVal);
 	drawIV();
 	drawEV();
@@ -453,10 +555,15 @@ function drawActualStats(levelNum,natureModifier)
 	var actualSpDefense = BaseToActual(spDefenseBase, spDefenseIV,spDefenseEV,levelNum, natureMod[3]);
 	var actualSpeed = BaseToActual(speedBase,speedIV,speedEV,levelNum,natureMod[4]);
 	ctx_Top.fillText(actualHealth,345,122);
+	ctx_Top.fillStyle = colorArray[0];
 	ctx_Top.fillText(actualAttack,345,137);
+	ctx_Top.fillStyle = colorArray[1];
 	ctx_Top.fillText(actualDefense,345,154);
+	ctx_Top.fillStyle = colorArray[2];
 	ctx_Top.fillText(actualSpAttack,345,170);
+	ctx_Top.fillStyle = colorArray[3];
 	ctx_Top.fillText(actualSpDefense,345,186);
+	ctx_Top.fillStyle = colorArray[4];
 	ctx_Top.fillText(actualSpeed,345,203);
 }
 
@@ -477,6 +584,13 @@ function getNatureModifier(natureModifier)
 	natureMod[2] = 1; //Special Attack
 	natureMod[3] = 1; //Special Defense
 	natureMod[4] = 1; //Speed
+	colorArray[0] = "white";
+	colorArray[1] = "white";
+	colorArray[2] = "white";
+	colorArray[3] = "white";
+	colorArray[4] = "white";
+	var _red = "#F89777";
+	var _blue = "#77BFF8";
 	natureModifier = parseInt(natureModifier);
 	switch(natureModifier)
 	{
@@ -487,26 +601,36 @@ function getNatureModifier(natureModifier)
 			//Lonely +Attack -Defense
 			natureMod[0] = 1.1;
 			natureMod[1] = 0.9;
+			colorArray[0] = _red;
+			colorArray[1] = _blue;
 			break;
 		case 2:
 			//Brave +Attack -Speed
 			natureMod[0] = 1.1;
 			natureMod[4] = 0.9;
+			colorArray[0] = _red;
+			colorArray[4] = _blue;
 			break;
 		case 3:
 			//Adamant +Attack -Sp. Attack
 			natureMod[0] = 1.1;
 			natureMod[2] = 0.9;
+			colorArray[0] = _red;
+			colorArray[2] = _blue;
 			break;
 		case 4:
 			//Naughty +Attack -Sp. Defense
 			natureMod[0] = 1.1;
 			natureMod[3] = 0.9;
+			colorArray[0] = _red;
+			colorArray[3] = _blue;
 			break;
 		case 5:
 			//Bold +Defense -Attack
 			natureMod[0] = 0.9;
 			natureMod[1] = 1.1;
+			colorArray[0] = _blue;
+			colorArray[1] = _red;
 			break;
 		case 6:
 			//Docile changes Nothing
@@ -515,26 +639,36 @@ function getNatureModifier(natureModifier)
 			//Relaxed +Defense -Speed
 			natureMod[1] = 1.1;
 			natureMod[4] = 0.9;
+			colorArray[1] = _red;
+			colorArray[4] = _blue;
 			break;
 		case 8:
 			//Impish +Defense -Sp. Attack
 			natureMod[1] = 1.1;
 			natureMod[2] = 0.9;
+			colorArray[1] = _red;
+			colorArray[2] = _blue;
 			break;
 		case 9:
 			//Lax +Defense -Sp. Defense
 			natureMod[1] = 1.1;
 			natureMod[3] = 0.9;
+			colorArray[1] = _red;
+			colorArray[3] = _blue;
 			break;
 		case 10:
 			//Timid +Speed -Attack
 			natureMod[0] = 0.9;
 			natureMod[4] = 1.1;
+			colorArray[4] = _red;
+			colorArray[0] = _blue;
 			break;
 		case 11:
 			//Hasty +Speed -Defense
 			natureMod[1] = 0.9;
 			natureMod[4] = 1.1;
+			colorArray[4] = _red;
+			colorArray[1] = _blue;
 			break;
 		case 12:
 			//Serious changes nothing
@@ -543,26 +677,36 @@ function getNatureModifier(natureModifier)
 			//Jolly +Speed -Sp. Attack
 			natureMod[2] = 0.9;
 			natureMod[4] = 1.1;
+			colorArray[4] = _red;
+			colorArray[2] = _blue;
 			break;
 		case 14:
 			//Naive +Speed -Sp. Defense
 			natureMod[3] = 0.9;
 			natureMod[4] = 1.1;
+			colorArray[4] = _red;
+			colorArray[3] = _blue;
 			break;
 		case 15:
 			//Modest +Sp. Attack -Attack
 			natureMod[0] = 0.9;
 			natureMod[2] = 1.1;
+			colorArray[2] = _red;
+			colorArray[0] = _blue;
 			break;
 		case 16:
 			//Mild +Sp. Attack -Defense
 			natureMod[1] = 0.9;
 			natureMod[2] = 1.1;
+			colorArray[2] = _red;
+			colorArray[1] = _blue;
 			break;
 		case 17:
 			//Quiet +Sp. Attack -Speed
 			natureMod[2] = 1.1;
 			natureMod[4] = 0.9;
+			colorArray[2] = _red;
+			colorArray[4] = _blue;
 			break;
 		case 18:
 			//Bashful changes nothing
@@ -571,26 +715,36 @@ function getNatureModifier(natureModifier)
 			//Rash +Sp. Attack -Sp. Defense
 			natureMod[2] = 1.1;
 			natureMod[3] = 0.9;
+			colorArray[2] = _red;
+			colorArray[3] = _blue;
 			break;
 		case 20:
 			//Calm +Sp. Defense -Attack
 			natureMod[0] = 0.9;
 			natureMod[3] = 1.1;
+			colorArray[3] = _red;
+			colorArray[0] = _blue;
 			break;
 		case 21:
 			//Gentle +Sp. Defense -Defense
 			natureMod[1] = 0.9;
 			natureMod[3] = 1.1;
+			colorArray[3] = _red;
+			colorArray[1] = _blue;
 			break;
 		case 22:
 			//Sassy +Sp. Defense -Speed
 			natureMod[3] = 1.1;
 			natureMod[4] = 0.9;
+			colorArray[3] = _red;
+			colorArray[4] = _blue;
 			break;
 		case 23:
 			//Careful +Sp. Defense -Sp. Attack
 			natureMod[2] = 0.9;
 			natureMod[3] = 1.1;
+			colorArray[3] = _red;
+			colorArray[2] = _blue;
 			break;
 		case 24:
 			//Quirky changes nothing

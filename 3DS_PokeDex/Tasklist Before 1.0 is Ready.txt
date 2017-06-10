@@ -1,0 +1,23 @@
+v0.9 146kb of Delivered Data
+v1.0 Upcoming - 118kb of Delivered Data - Way more features than 0.9
+
+Things still left to add before we can release
+
+Shiny display - DONE
+Add all the formes and megas - DONE DONITY DONE DONE DONE DONE DONE DONE DONE 
+Add all the Stats for All the Forme Pokemon - DONE
+
+Things to change
+Reset forme when you change Pokemon - DONE
+Remove the "Select - Blah" from dropdowns - DONE
+Only allow up to 510 EV's on a Pokerman - DONE
+
+Remove jQuery - DONE
+
+Move all the sprites to a Sprite Sheet - DONE!
+
+
+
+
+Can learn move? - Save for future update
+Capture Location per Game? - Save for future update
