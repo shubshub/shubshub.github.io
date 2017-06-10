@@ -8,11 +8,11 @@ var canvasBottom = document.getElementById("PokeDex_3DS_Bottom");
 var canvasTop = document.getElementById("PokeDex_3DS_Top");
 if (lite_mode == false)
 {
-	var version = "1.0";
+	var version = "1.0.1";
 }
 else if (lite_mode == true)
 {
-	var version = "1.0 - Lite";
+	var version = "1.0.1 - Lite";
 }
 var versionNum = 10;
 var previousPokemon = 0;
@@ -408,7 +408,7 @@ function populateAbility()
 		_opt.innerText = _abilities[_keys];
 		_ability_element.appendChild(_opt);
 	}
-	_ability_element.value = -4;
+	_ability_element.selectedIndex = -4;
 	try {
 		showState("dropdown_ability");
 	} catch(e) {
