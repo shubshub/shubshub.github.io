@@ -27,4 +27,6 @@ function getPokemon(_input)
 				}
 		}
 	}
+	
+	return 0;
 }
