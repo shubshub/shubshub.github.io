@@ -8,11 +8,11 @@ var canvasBottom = document.getElementById("PokeDex_3DS_Bottom");
 var canvasTop = document.getElementById("PokeDex_3DS_Top");
 if (lite_mode == false)
 {
-	var version = "1.0.1";
+	var version = "1.0.2";
 }
 else if (lite_mode == true)
 {
-	var version = "1.0.1 - Lite";
+	var version = "1.0.2 - Lite";
 }
 var versionNum = 10;
 var previousPokemon = 0;
@@ -383,6 +383,10 @@ function populateAbility()
 		return;
 	}
 	var _ability_element = document.getElementById("dropdown_ability");
+	if (typeof lastPokemonNum == "string")
+	{
+		lastPokemonNum = parseInt(lastPokemonNum);
+	}
 	var _db = _local[getPokemon(lastPokemonNum).toLowerCase()];
 	if (globalForme > 0)
 	{
