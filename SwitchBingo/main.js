@@ -1,4 +1,4 @@
-var image_order = [
+var nx_event = [
 	"zelda_exclusive",
 	"nintendo_eshop",
 	"mario_kart",
@@ -23,6 +23,36 @@ var image_order = [
 	"ar_compatibility",
 	"virtual_console",
 	"backwards_compatible_digital"
+]
+
+var image_order = [
+];
+
+var march_direct = [
+	"March2018/achievements",
+	"March2018/animal_crossing",
+	"March2018/bayonetta",
+	"March2018/detective_pikachu",
+	"March2018/diablo",
+	"March2018/f_zero",
+	"March2018/fire_emblem",
+	"March2018/labo",
+	"March2018/mario_kart_9",
+	"March2018/mario_maker",
+	"March2018/mario_tennis",
+	"March2018/megaman",
+	"March2018/metroid_prime",
+	"March2018/netflix_switch",
+	"March2018/octopath",
+	"March2018/pikmin_4",
+	"March2018/pokemon_switch",
+	"March2018/smash_bros",
+	"March2018/starlink_atlas",
+	"March2018/switch_online",
+	"March2018/virtual_console",
+	"March2018/war_groove",
+	"March2018/xenoblade",
+	"March2018/yoshi_switch"
 ]
 
 var empty_image_order = [
@@ -89,7 +119,7 @@ function shuffle(array) {
   return array;
 }
 
-image_order = shuffle(image_order);
+image_order = shuffle(march_direct);
 
 
 function init()
@@ -128,12 +158,12 @@ function clickHandler(event)
 			{
 				if(imageType[i] == 0)
 				{
-					context.drawImage(activeImageArray[i], xLocation[i], yLocation[i]);
+					context.drawImage(activeImageArray[i], xLocation[i], yLocation[i], 154, 94);
 					imageType[i] = 1;
 				}
 				else if (imageType[i] == 1)
 				{
-					context.drawImage(imageArray[i], xLocation[i], yLocation[i]);
+					context.drawImage(imageArray[i], xLocation[i], yLocation[i], 154, 94);
 					imageType[i] = 0;
 				}
 			}
@@ -156,12 +186,12 @@ function EmptyclickHandler(event)
 			{
 				if(imageType[i] == 0)
 				{
-					context.drawImage(EmptyactiveImageArray[i], xLocation[i], yLocation[i]);
+					context.drawImage(EmptyactiveImageArray[i], xLocation[i], yLocation[i], 154, 94);
 					imageType[i] = 1;
 				}
 				else if (imageType[i] == 1)
 				{
-					context.drawImage(EmptyimageArray[i], xLocation[i], yLocation[i]);
+					context.drawImage(EmptyimageArray[i], xLocation[i], yLocation[i], 154, 94);
 					imageType[i] = 0;
 				}
 			}
@@ -187,7 +217,7 @@ function placeAllPanels()
 		{
 			
 
-			context.drawImage(imageArray[i], globalX, globalY);
+			context.drawImage(imageArray[i], globalX, globalY, 154, 94);
 			xLocation[i] = globalX;
 			yLocation[i] = globalY;
 			imageType[i] = 0;
