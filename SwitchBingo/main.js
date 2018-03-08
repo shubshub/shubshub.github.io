@@ -284,15 +284,15 @@ function placeAllEmptyPanels()
 			{
 				//Change to new Row
 				globalX = 6;
-				globalY += imageArray[y].height + 6;
+				globalY += 94 + 6;
 			}
 			else if (panelsPlaced == 12)
 			{
-				globalX += (imageArray[y].width +6 ) + 153 + 6; //Skip the Freespace
+				globalX += (154 +6 ) + 153 + 6; //Skip the Freespace
 			}
 			else
 			{
-				globalX += imageArray[y].width + 6;
+				globalX += 154 + 6;
 			}
 		}
 		
