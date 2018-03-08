@@ -152,9 +152,9 @@ function clickHandler(event)
 	
 	for (var i = 0; i < image_order.length; i++)
 	{
-		if (event.clientX > xLocation[i] && event.clientX < xLocation[i] + imageArray[i].width)
+		if (event.clientX > xLocation[i] && event.clientX < xLocation[i] + 154)
 		{
-			if (event.clientY > yLocation[i] && event.clientY < yLocation[i] + imageArray[i].height)
+			if (event.clientY > yLocation[i] && event.clientY < yLocation[i] + 94)
 			{
 				if(imageType[i] == 0)
 				{
@@ -232,15 +232,15 @@ function placeAllPanels()
 			{
 				//Change to new Row
 				globalX = 6;
-				globalY += 154 + 6;
+				globalY += 94 + 6;
 			}
 			else if (panelsPlaced == 12)
 			{
-				globalX += (imageArray[y].width +6 ) + 153 + 6; //Skip the Freespace
+				globalX += (154 +6 ) + 153 + 6; //Skip the Freespace
 			}
 			else
 			{
-				globalX += 94 + 6;
+				globalX += 154 + 6;
 			}
 		}
 		
