@@ -232,7 +232,7 @@ function placeAllPanels()
 			{
 				//Change to new Row
 				globalX = 6;
-				globalY += imageArray[y].height + 6;
+				globalY += 154 + 6;
 			}
 			else if (panelsPlaced == 12)
 			{
@@ -240,7 +240,7 @@ function placeAllPanels()
 			}
 			else
 			{
-				globalX += imageArray[y].width + 6;
+				globalX += 94 + 6;
 			}
 		}
 		
