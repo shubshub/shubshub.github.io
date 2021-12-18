@@ -12,12 +12,13 @@ function init() {
     createPanel(MAIN_DEX_PAGE, ["col-md-6", "panel-default", "col-md-offset-3"], "main_panel", false);
     createPanel("#main_panel > .panel-body", ["col-md-5", "panel-default"], "filters_panel");
     createPanel("#main_panel > .panel-body", ["col-sm-7", "panel-default"], "display_panel");
-    createPanel("#display_panel > .panel-body", ["col-md-16", "panel-default" ], "pokemon_display", false);
-    createPanel("#display_panel > .panel-body", ["col-md-6", "panel-default" ], "stats_display", false);
-    createImage("#pokemon_display > .panel-body", null, "front_default");
-    createImage("#pokemon_display > .panel-body", null, "front_female");
-    createImage("#pokemon_display > .panel-body", null, "front_shiny");
-    createImage("#pokemon_display > .panel-body", null, "front_shiny_female");
+    createPanel("#display_panel > .panel-body", ["col-md-13", "panel-default" ], "pokemon_display", false);
+    createPanel("#display_panel > .panel-body", ["col-md-13", "panel-default" ], "stats_display", false);
+    createImage("#pokemon_display > .panel-body", null, "front_default", null);
+    createImage("#pokemon_display > .panel-body", null, "front_female", null);
+    createImage("#pokemon_display > .panel-body", null, "front_shiny", null);
+    createImage("#pokemon_display > .panel-body", null, "front_shiny_female", null);
+    createTable("#stats_display > .panel-body", "stats_table", ["", "Base Stats", "Level 50", "Level 100", "IV's", "EV's"], ["table-striped"], [null, null, null, null, "width:35px", "width:42px"]);
     addText("#display_panel > .panel-heading", "Information");
     addText("#filters_panel > .panel-heading", "Pokemon");
     createDropdown("#filters_panel > .panel-body", POKEDEX_OBJECT, "Pokemon:", "pokemon_list");
@@ -31,6 +32,7 @@ function initEventhandlers() {
         var pokemon = $(this).val();
         if (pokemon == -1) {
             d3.select("#pokemon_image").attr("src", "");
+            $("#stats_table tr").remove(); 
             return;
         }
         console.log("Pokemon: ", pokemon);
@@ -53,15 +55,21 @@ function initEventhandlers() {
                     d3.select("#front_shiny_female").attr("src", f_s_f);
                     SPRITES_CACHE.push({value:data.id,front_default:f_d, front_female: f_f, front_shiny: f_s, front_shiny_female: f_s_f});
                     STATS_CACHE.push({value:data.id,stats:stats});
+                    $("#stats_table tr").remove(); 
+                    populateTable("#stats_table", stats);
                     console.log("Stored in Cache");
                 }
             }); 
         } else {
             var obj = SPRITES_CACHE[sprite_num];
+            var stats = STATS_CACHE[sprite_num];
             d3.select("#front_default").attr("src", obj.front_default);
             d3.select("#front_female").attr("src", obj.front_female);
             d3.select("#front_shiny").attr("src", obj.front_shiny);
             d3.select("#front_shiny_female").attr("src", obj.front_shiny_female);
+            $("#stats_table tr").remove(); 
+            console.log("Stats", stats);
+            populateTable("#stats_table", stats.stats);
             console.log("Pulled from Cache");
         }
        

@@ -11,19 +11,15 @@ function initFilters() {
 
 function initPokedex() {
     var dex = exports.BattlePokedex;
-    var deduplicator = [];
     POKEDEX_OBJECT.push({value:-1, title:"-- Please Select --"});
     for (var item in dex) {
         var obj = dex[item];
         
-        if (deduplicator.indexOf(obj.num) === -1) {
-            
-            if (obj.isNonstandard === undefined) {
-                deduplicator.push(obj.num);
-                //console.log(dex[item]);
-                POKEDEX_OBJECT.push({value:obj.num,title:obj.name});
-            }
-            
+        //Make sure its a real legitamite default forme Pokemon
+        if (obj.isNonstandard != "CAP" && obj.isNonstandard != "Custom" && obj.forme === undefined) {
+            //deduplicator.push(obj.num);
+            //console.log(dex[item]);
+            POKEDEX_OBJECT.push({value:obj.num,title:obj.name});
         }
         
     }
