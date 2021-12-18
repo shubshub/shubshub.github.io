@@ -12,6 +12,7 @@ function initFilters() {
 function initPokedex() {
     var dex = exports.BattlePokedex;
     var deduplicator = [];
+    POKEDEX_OBJECT.push({value:-1, title:"-- Please Select --"});
     for (var item in dex) {
         var obj = dex[item];
         
@@ -44,6 +45,8 @@ function initNatures() {
         "Docile", "Relaxed", "Impish", "Lax", "Timid", "Hasty", "Serious", 
         "Jolly", "Naive", "Modest", "Mild", "Quiet", "Bashful", "Rash", 
         "Calm", "Gentle", "Sassy", "Careful", "Quirky"];
+    
+    NATURES_OBJECT.push({value:-1, title:"-- Please Select --"});
     
     for (var i = 0; i < natures.length; i++) {
         NATURES_OBJECT.push({value:i,title:natures[i]});

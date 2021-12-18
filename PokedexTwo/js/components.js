@@ -116,26 +116,3 @@ function createDropdown(selector, dropdownArray, label, id) {
     
     return dropdown;
 }
-
-/*
- * 
- */
-function sortSelect(elem) {
-    var tmpAry = [];
-    // Retain selected value before sorting
-    var selectedValue = elem[elem.selectedIndex].value;
-    // Grab all existing entries
-    for (var i=0;i<elem.options.length;i++) tmpAry.push(elem.options[i]);
-    // Sort array by text attribute
-    tmpAry.sort(function(a,b){ return (a.text < b.text)?-1:1; });
-    // Wipe out existing elements
-    while (elem.options.length > 0) elem.options[0] = null;
-    // Restore sorted elements
-    var newSelectedIndex = 0;
-    for (var i=0;i<tmpAry.length;i++) {
-        elem.options[i] = tmpAry[i];
-        if(elem.options[i].value == selectedValue) newSelectedIndex = i;
-    }
-    elem.selectedIndex = newSelectedIndex; // Set new selected index after sorting
-    return;
-}
