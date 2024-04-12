@@ -1,0 +1,9 @@
+@font-face {
+    font-family: 'sinclair';
+    src: local("PQNBYXFSSinclair.woff") format("woff"),
+	url('PQNBYXFSSinclair.woff2') format('woff2'),
+        url('PQNBYXFSSinclair.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
