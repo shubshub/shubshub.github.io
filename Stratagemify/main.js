@@ -34,7 +34,7 @@ let o = {
 	"font-weight": "bold",
 	"font-size": "18px"
   },
-  txtConent: "ALPHAS 500KG DIAPER"
+  txtConent: "ALPHAS 500KG EAGLE"
 };
 
 // a function to create a text element 
