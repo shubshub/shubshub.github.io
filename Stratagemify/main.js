@@ -8,7 +8,7 @@ rect.setAttribute("x", "0");
 rect.setAttribute("y", "0");
 rect.setAttribute("width", "390");
 rect.setAttribute("height", "80");
-rect.setAttribute("fill", "gray");
+rect.setAttribute("fill", "		#636363");
 
 var rect2 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
 rect2.setAttribute("x", "12");
@@ -31,9 +31,10 @@ let o = {
     x: "99",
     y: "31",
 	"font-family": "sinclair",
-	"font-size": "19px"
+	"font-weight": "bold",
+	"font-size": "18px"
   },
-  txtConent: "EAGLE 500KG BOMB"
+  txtConent: "ALPHAS 500KG DIAPER"
 };
 
 // a function to create a text element 
