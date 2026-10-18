@@ -130,6 +130,7 @@
       <b>SHIFT</b><span>Sprint</span>
       <b>DRAG</b><span>Orbit camera (auto-follows behind you)</span>
       <b>WHEEL</b><span>Zoom in / out</span>
+      <b>LEDGE</b><span>Falling into a ledge grabs it · SPACE to climb up · move away to drop</span>
     </div>
 
     <div class="nickrow">
@@ -542,6 +543,7 @@ function stepReplay() {
   player.pos.set(s.x, s.y, s.z);
   player.vel.set(s.vx, s.vy, s.vz);
   player.grounded = s.grounded;
+  player.yaw = player.yaw;
   player.airTime = s.grounded ? 0 : player.airTime + CONST_DT;
 
   const pct = Math.round((replayView.tick / frames.length) * 100);
@@ -1197,6 +1199,7 @@ part(new THREE.BoxGeometry(0.24, 0.78, 0.24), matPants, legL, 0, -0.39, 0);
 part(new THREE.BoxGeometry(0.24, 0.78, 0.24), matPants, legR, 0, -0.39, 0);
 
 let trace = [];
+let sim = null;
 
 const player = {
   pos: new THREE.Vector3(0, 0.02, 14),
@@ -1455,6 +1458,7 @@ function reset() {
   state.runTime = 0;
   state.submitted = false;
   trace = [];
+  sim = SIM.createSim(currentSeed);
   smogZ = SMOG_DIST;
   cam.yaw = 0;
   cam.pitch = 0.28;
@@ -1534,131 +1538,81 @@ function readWish() {
 }
 
 function stepPlayer(dt) {
-  const p = player.pos;
-  const v = player.vel;
   const sprint = keys.has("ShiftLeft") || keys.has("ShiftRight");
-  const moving = state.mode === "play" ? readWish() : (wish.set(0, 0, 0), false);
-  const speedCap = sprint ? SPRINT : WALK;
+  const playing = state.mode === "play";
+  const moving = playing ? readWish() : (wish.set(0, 0, 0), false);
 
-  if (state.mode === "play" && trace.length < SIM.CONST.MAX_TRACE_TICKS) {
-    let buttons = 0;
+  let buttons = 0;
+  if (playing) {
     if (player.jumpEdge) buttons |= SIM.BTN_JUMP;
     if (sprint) buttons |= SIM.BTN_SPRINT;
     if (moving) buttons |= SIM.BTN_MOVING;
-    trace.push({ wx: wish.x, wz: wish.z, buttons });
+    if (trace.length < SIM.CONST.MAX_TRACE_TICKS) trace.push({ wx: wish.x, wz: wish.z, buttons });
     player.jumpEdge = false;
   }
 
-  if (moving) {
-    const ax = wish.x * speedCap - v.x;
-    const az = wish.z * speedCap - v.z;
-    const al = Math.sqrt(ax * ax + az * az) || 1;
-    const am = player.grounded ? ACC_GROUND : ACC_AIR;
-    const step = Math.min(al, am * dt);
-    v.x += (ax / al) * step;
-    v.z += (az / al) * step;
-    const targetYaw = Math.atan2(-wish.x, -wish.z);
-    player.yaw = angleDamp(player.yaw, targetYaw, 12, dt);
-  } else if (player.grounded) {
-    const sp = Math.sqrt(v.x * v.x + v.z * v.z);
-    const drop = Math.min(sp, ACC_GROUND * 0.9 * dt);
-    if (sp > 0.0001) { v.x -= (v.x / sp) * drop; v.z -= (v.z / sp) * drop; }
-  }
-
-  const wasGrounded = player.grounded;
-  const impact = -v.y;
-  v.y += GRAVITY * dt;
-  if (v.y < -70) v.y = -70;
-
-  if (state.mode === "play") {
-    player.buffer -= dt;
-    player.coyote = wasGrounded ? COYOTE : player.coyote - dt;
-    if (player.buffer > 0) {
-      if (player.grounded || player.coyote > 0) {
-        v.y = JUMP_V;
-        player.jumps = 1;
-        player.grounded = false;
-        player.coyote = 0;
-        player.buffer = 0;
-        player.squash = -0.35;
-        blip(300, 620, 0.13, "sine", 0.06);
-        burst(p.x, p.y + 0.05, p.z, 5, 0xcfc8ba, 2.6, 0.5, 0.3);
-      } else if (player.jumps === 1) {
-        v.y = DOUBLE_V;
-        player.jumps = 2;
-        player.buffer = 0;
-        player.squash = -0.28;
-        blip(460, 880, 0.13, "sine", 0.055);
-        burst(p.x, p.y + 0.2, p.z, 9, 0x7fd0ff, 3.2, 0.6, 0.32);
-      }
-    }
-  }
-
-  p.x += v.x * dt;
-  resolveAxis("x");
-  p.z += v.z * dt;
-  resolveAxis("z");
-  p.x = clamp(p.x, -30, 30);
-
-  const prevY = p.y;
-  p.y += v.y * dt;
-  player.grounded = false;
-  player.groundTop = -Infinity;
-  const a = {
-    x0: p.x - HW, x1: p.x + HW,
-    y0: p.y, y1: p.y + PH,
-    z0: p.z - HW, z1: p.z + HW
-  };
-  for (let i = 0; i < solids.length; i++) {
-    const b = solids[i];
-    if (!overlapsXZ(a, b)) continue;
-    const top = b.max.y, bot = b.min.y;
-    if (p.y >= top || p.y + PH <= bot) continue;
-    if (v.y <= 0 && prevY >= top - 0.04) {
-      p.y = top;
-      v.y = 0;
-      player.grounded = true;
-      if (top > player.groundTop) player.groundTop = top;
-    } else if (v.y > 0 && prevY + PH <= bot + 0.04) {
-      p.y = bot - PH;
-      v.y = 0;
-    }
-  }
-  player.jumps = player.grounded ? 0 : player.jumps;
-  if (player.grounded) player.coyote = COYOTE;
-  player.airTime = player.grounded ? 0 : player.airTime + dt;
-
-  if (!wasGrounded && player.grounded) {
-    const f = clamp((impact - 6) / 26, 0, 1);
-    if (impact > 6) {
-      player.squash = 0.3 + f * 0.45;
-      thud();
-      burst(p.x, p.y + 0.06, p.z, 5 + Math.floor(f * 10), 0xbfb6a6, 2 + f * 4, 0.55, 0.36);
-    }
-  }
+  if (!sim) return;
+  sim.step({ wx: wish.x, wz: wish.z, buttons });
+  drainEvents();
+  syncFromSim(dt);
 
   if (state.mode === "play") {
     state.runTime += dt;
-    if (p.y < player.pos.y - 90 || p.y < -40) die("fall");
-    state.bestZ = Math.min(state.bestZ, p.z);
+    if (sim.state.y < -40) die("fall");
+    state.bestZ = Math.min(state.bestZ, player.pos.z);
     state.dist = Math.max(state.dist, -state.bestZ);
   }
 }
 
-function resolveAxis(axis) {
-  const p = player.pos;
-  const v = player.vel;
-  for (let i = 0; i < solids.length; i++) {
-    const b = solids[i];
-    if (p.x + HW <= b.min.x || p.x - HW >= b.max.x) continue;
-    if (p.y + PH <= b.min.y + 0.02 || p.y >= b.max.y - 0.02) continue;
-    if (p.z + HW <= b.min.z || p.z - HW >= b.max.z) continue;
-    const toMin = b.min[axis] - (p[axis] + HW);
-    const toMax = b.max[axis] - (p[axis] - HW);
-    if (Math.abs(toMin) < Math.abs(toMax)) p[axis] = b.min[axis] - HW - 0.001;
-    else p[axis] = b.max[axis] + HW + 0.001;
-    v[axis] = 0;
+function syncFromSim(dt) {
+  const s = sim.state;
+  player.pos.set(s.x, s.y, s.z);
+  player.vel.set(s.vx, s.vy, s.vz);
+  player.grounded = s.grounded;
+  player.jumps = s.jumps;
+  player.coyote = s.coyote;
+  const moving = Math.abs(s.vx) + Math.abs(s.vz) > 0.6;
+  if (moving) {
+    const targetYaw = Math.atan2(-s.vx, -s.vz);
+    player.yaw = angleDamp(player.yaw, targetYaw, 12, dt);
   }
+  player.airTime = s.grounded ? 0 : player.airTime + dt;
+}
+
+function drainEvents() {
+  const ev = sim.state.events;
+  if (!ev.length) return;
+  const p = player.pos;
+  for (let i = 0; i < ev.length; i++) {
+    const e = ev[i];
+    if (e === SIM.EV_JUMP) {
+      player.squash = -0.35;
+      blip(300, 620, 0.13, "sine", 0.06);
+      burst(p.x, p.y + 0.05, p.z, 5, 0xcfc8ba, 2.6, 0.5, 0.3);
+    } else if (e === SIM.EV_DOUBLE) {
+      player.squash = -0.28;
+      blip(460, 880, 0.13, "sine", 0.055);
+      burst(p.x, p.y + 0.2, p.z, 9, 0x7fd0ff, 3.2, 0.6, 0.32);
+    } else if (e === SIM.EV_GRAB) {
+      player.squash = 0.3;
+      blip(220, 130, 0.1, "triangle", 0.07);
+      burst(p.x, p.y + 1.5, p.z, 7, 0xd8cfba, 2.2, 0.45, 0.3);
+    } else if (e === SIM.EV_MANTLE) {
+      player.squash = -0.15;
+      blip(380, 560, 0.11, "sine", 0.055);
+    } else if (e === SIM.EV_DROP) {
+      blip(200, 90, 0.1, "triangle", 0.05);
+    } else if (e === SIM.EV_LAND) {
+      const impact = sim.state.lastLandImpact;
+      const f = clamp((impact - 6) / 26, 0, 1);
+      if (impact > 6) {
+        player.squash = 0.3 + f * 0.45;
+        thud();
+        burst(p.x, p.y + 0.06, p.z, 5 + Math.floor(f * 10), 0xbfb6a6, 2 + f * 4, 0.55, 0.36);
+      }
+    }
+  }
+  ev.length = 0;
 }
 
 function angleDamp(a, b, l, dt) {
@@ -1728,6 +1682,33 @@ function animateRig(dt) {
   const swing = clamp(speed / SPRINT, 0, 1);
   player.squash = damp(player.squash, 0, 9, dt);
   const sq = player.squash;
+  const mode = sim ? sim.state.mode : SIM.MODE_NORMAL;
+  const live = replayView.active;
+  const hanging = live ? replayView.sim.state.mode === SIM.MODE_HANG : mode === SIM.MODE_HANG;
+  const mantling = live ? replayView.sim.state.mode === SIM.MODE_MANTLE : mode === SIM.MODE_MANTLE;
+  const mt = live ? clamp(replayView.sim.state.mantleT, 0, 1) : (mantling ? clamp(sim.state.mantleT, 0, 1) : 0);
+
+  if (hanging || mantling) {
+    body.scale.set(1 + sq * 0.2, 1 - sq * 0.22, 1 + sq * 0.2);
+    body.position.y = Math.sin(state.time * 2.1) * 0.035;
+    body.rotation.z = Math.sin(state.time * 1.7) * 0.05;
+    const t = hanging ? 0 : mt;
+    const up = 1 - t;
+    armL.rotation.x = lerp(0.2, -2.85, up);
+    armR.rotation.x = lerp(0.2, -2.85, up);
+    armL.rotation.z = 0.18;
+    armR.rotation.z = -0.18;
+    legL.rotation.x = lerp(-0.55, 0.34, up);
+    legR.rotation.x = lerp(-0.3, -0.16, up);
+    legL.rotation.z = 0.05;
+    legR.rotation.z = -0.05;
+    scarfTail.rotation.x = 0.35 + Math.sin(state.time * 5) * 0.18;
+    scarfTail.rotation.y = Math.sin(state.time * 4) * 0.25;
+    rig.position.copy(player.pos);
+    rig.rotation.y = player.yaw;
+    return;
+  }
+
   body.scale.set(1 + sq * 0.32, 1 - sq * 0.4, 1 + sq * 0.32);
   body.position.y = player.grounded ? Math.abs(Math.sin(player.animPhase)) * 0.09 * swing : 0;
   body.rotation.z = player.grounded ? Math.sin(player.animPhase) * 0.05 * swing : 0;
@@ -1833,6 +1814,7 @@ $("nickInput").value = localStorage.getItem(NICK_KEY) || "";
 syncSeedUI();
 
 buildIntro();
+sim = SIM.createSim(currentSeed);
 cam.pos.set(player.pos.x, player.pos.y + 6.5, player.pos.z + 12.5);
 updateCamera(0.016, true);
 updateHud();

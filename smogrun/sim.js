@@ -27,8 +27,25 @@ export const CONST = {
   SPAWN_Z: 14,
   X_LIMIT: 30,
   QUANT: 4096,
-  MAX_TRACE_TICKS: 120 * 600
+  MAX_TRACE_TICKS: 120 * 600,
+  GRAB_BELOW: 2.15,
+  GRAB_ABOVE: 0.95,
+  GRAB_REACH: 0.9,
+  HANG_DROP: 1.62,
+  STAND_EPS: 0.06,
+  MANTLE_TIME: 0.3
 };
+
+export const EV_JUMP = 1;
+export const EV_DOUBLE = 2;
+export const EV_LAND = 3;
+export const EV_GRAB = 4;
+export const EV_MANTLE = 5;
+export const EV_DROP = 6;
+
+export const MODE_NORMAL = 0;
+export const MODE_HANG = 1;
+export const MODE_MANTLE = 2;
 
 const PAL = [0x6f7a80, 0x7d7469, 0x5f6b6e, 0x8a847b, 0x6b6f78, 0x7a6a63, 0x646e6a];
 const DARK = 0x3c4448;
@@ -419,12 +436,144 @@ export function createSim(seedString) {
     coyote: CONST.COYOTE,
     buffer: 0,
     bestZ: 0,
-    worldZ: gen.worldZ
+    worldZ: gen.worldZ,
+    mode: MODE_NORMAL,
+    hangNX: 0, hangNZ: 0,
+    hangX: 0, hangY: 0, hangZ: 0,
+    standX: 0, standY: 0, standZ: 0,
+    mantleT: 0,
+    lastLandImpact: 0,
+    events: []
   };
+
+  function emit(e) {
+    if (s.events.length < 8) s.events.push(e);
+  }
 
   function ensureWorld(z) {
     let guard = 0;
     while (gen.worldZ > z - 300 && guard++ < 40) gen.generateOne();
+  }
+
+  function overlapsSolid(x0, y0, z0, x1, y1, z1) {
+    const solids = gen.solids;
+    for (let i = 0; i < solids.length; i++) {
+      const b = solids[i];
+      if (x1 <= b.x0 || x0 >= b.x1) continue;
+      if (y1 <= b.y0 || y0 >= b.y1) continue;
+      if (z1 <= b.z0 || z0 >= b.z1) continue;
+      return true;
+    }
+    return false;
+  }
+
+  function headroomBlocked(x, y, z) {
+    const hw = CONST.HW;
+    return overlapsSolid(x - hw, y + 0.08, z - hw, x + hw, y + CONST.PH, z + hw);
+  }
+
+  function hangClear(x, y, z) {
+    const hw = CONST.HW;
+    return !overlapsSolid(x - hw, y, z - hw, x + hw, y + CONST.PH, z + hw);
+  }
+
+  function startHang(nx, nz, hx, hy, hz, sx, sy, sz) {
+    s.mode = MODE_HANG;
+    s.hangNX = nx;
+    s.hangNZ = nz;
+    s.hangX = hx; s.hangY = hy; s.hangZ = hz;
+    s.standX = sx; s.standY = sy; s.standZ = sz;
+    s.x = hx; s.y = hy; s.z = hz;
+    s.vx = 0; s.vy = 0; s.vz = 0;
+    s.grounded = false;
+    s.buffer = 0;
+    emit(EV_GRAB);
+  }
+
+  function tryGrab(wx, wz) {
+    const solids = gen.solids;
+    const px = s.x, py = s.y, pz = s.z;
+    const hw = CONST.HW;
+    const INSET = hw * 0.6;
+    let best = null;
+    let bestD = Infinity;
+
+    for (let i = 0; i < solids.length; i++) {
+      const b = solids[i];
+      const top = b.y1;
+      if (top > py + CONST.GRAB_ABOVE || top < py - CONST.GRAB_BELOW) continue;
+      const drop = top - CONST.HANG_DROP;
+      const standY = top + CONST.STAND_EPS;
+      if (b.x1 - b.x0 < hw * 2 || b.z1 - b.z0 < hw * 2) continue;
+
+      const inZ = clamp(pz, b.z0 + INSET, b.z1 - INSET);
+      const inX = clamp(px, b.x0 + INSET, b.x1 - INSET);
+
+      // climbing the -X face: hang just outside, mantle up and over onto the top
+      if (px < b.x0 - 0.02 && px > b.x0 - CONST.GRAB_REACH && wx > 0.2 && Math.abs(pz - inZ) < 0.4) {
+        const hx = b.x0 - hw - 0.03;
+        const sx = b.x0 + INSET;
+        const d = Math.abs(px - hx);
+        if (d < bestD && hangClear(hx, drop, inZ) && !headroomBlocked(sx, standY, inZ)) { bestD = d; best = [-1, 0, hx, drop, inZ, sx, standY, inZ]; }
+      }
+      if (px > b.x1 + 0.02 && px < b.x1 + CONST.GRAB_REACH && wx < -0.2 && Math.abs(pz - inZ) < 0.4) {
+        const hx = b.x1 + hw + 0.03;
+        const sx = b.x1 - INSET;
+        const d = Math.abs(px - hx);
+        if (d < bestD && hangClear(hx, drop, inZ) && !headroomBlocked(sx, standY, inZ)) { bestD = d; best = [1, 0, hx, drop, inZ, sx, standY, inZ]; }
+      }
+      if (pz < b.z0 - 0.02 && pz > b.z0 - CONST.GRAB_REACH && wz > 0.2 && Math.abs(px - inX) < 0.4) {
+        const hz = b.z0 - hw - 0.03;
+        const sz = b.z0 + INSET;
+        const d = Math.abs(pz - hz);
+        if (d < bestD && hangClear(inX, drop, hz) && !headroomBlocked(inX, standY, sz)) { bestD = d; best = [0, -1, inX, drop, hz, inX, standY, sz]; }
+      }
+      if (pz > b.z1 + 0.02 && pz < b.z1 + CONST.GRAB_REACH && wz < -0.2 && Math.abs(px - inX) < 0.4) {
+        const hz = b.z1 + hw + 0.03;
+        const sz = b.z1 - INSET;
+        const d = Math.abs(pz - hz);
+        if (d < bestD && hangClear(inX, drop, hz) && !headroomBlocked(inX, standY, sz)) { bestD = d; best = [0, 1, inX, drop, hz, inX, standY, sz]; }
+      }
+    }
+    if (best) startHang(best[0], best[1], best[2], best[3], best[4], best[5], best[6], best[7]);
+  }
+
+  function stepHang(frame, wx, wz) {
+    if (frame.buttons & BTN_JUMP) {
+      s.mode = MODE_MANTLE;
+      s.mantleT = 0;
+      emit(EV_MANTLE);
+      return;
+    }
+    const away = wx * s.hangNX + wz * s.hangNZ;
+    if (away > 0.4) {
+      s.mode = MODE_NORMAL;
+      s.x = s.hangX + s.hangNX * 0.12;
+      s.z = s.hangZ + s.hangNZ * 0.12;
+      s.vy = -1;
+      s.buffer = 0;
+      s.jumps = 0;
+      emit(EV_DROP);
+    }
+  }
+
+  function stepMantle(dt) {
+    s.mantleT += dt / CONST.MANTLE_TIME;
+    const t = Math.min(1, s.mantleT);
+    s.x = s.hangX + (s.standX - s.hangX) * t;
+    s.z = s.hangZ + (s.standZ - s.hangZ) * t;
+    s.y = s.hangY + (s.standY - s.hangY) * t;
+    if (t >= 1) {
+      s.mode = MODE_NORMAL;
+      s.y = s.standY;
+      s.grounded = false;
+      s.coyote = CONST.COYOTE;
+      s.jumps = 0;
+      s.vy = 0;
+      ensureWorld(s.z);
+      resolveAxis("x");
+      resolveAxis("z");
+    }
   }
 
   function resolveAxis(axis) {
@@ -462,6 +611,15 @@ export function createSim(seedString) {
     const moving = (buttons & BTN_MOVING) !== 0;
     const speedCap = sprint ? CONST.SPRINT : CONST.WALK;
 
+    if (s.mode === MODE_HANG) {
+      stepHang(frame, wx, wz);
+      if (s.mode !== MODE_NORMAL) { if (s.z < s.bestZ) s.bestZ = s.z; return; }
+    } else if (s.mode === MODE_MANTLE) {
+      stepMantle(dt);
+      if (s.z < s.bestZ) s.bestZ = s.z;
+      return;
+    }
+
     if (moving) {
       const ax = wx * speedCap - s.vx;
       const az = wz * speedCap - s.vz;
@@ -490,10 +648,12 @@ export function createSim(seedString) {
         s.grounded = false;
         s.coyote = 0;
         s.buffer = 0;
+        emit(EV_JUMP);
       } else if (s.jumps === 1) {
         s.vy = CONST.DOUBLE_V;
         s.jumps = 2;
         s.buffer = 0;
+        emit(EV_DOUBLE);
       }
     }
 
@@ -516,6 +676,7 @@ export function createSim(seedString) {
       const top = b.y1, bot = b.y0;
       if (s.y >= top || s.y + CONST.PH <= bot) continue;
       if (s.vy <= 0 && prevY >= top - 0.04) {
+        s.lastLandImpact = -s.vy;
         s.y = top;
         s.vy = 0;
         s.grounded = true;
@@ -527,6 +688,13 @@ export function createSim(seedString) {
     s.jumps = s.grounded ? 0 : s.jumps;
     if (s.grounded) s.coyote = CONST.COYOTE;
 
+    if (!wasGrounded && s.grounded) emit(EV_LAND);
+
+    if (s.mode === MODE_NORMAL && !s.grounded && s.vy <= 0.5 && moving) {
+      tryGrab(wx, wz);
+      if (s.mode === MODE_HANG) { if (s.z < s.bestZ) s.bestZ = s.z; return; }
+    }
+
     if (s.z < s.bestZ) s.bestZ = s.z;
   }
 
@@ -536,9 +704,16 @@ export function createSim(seedString) {
 export function simulate(seedString, frames) {
   const sim = createSim(seedString);
   const n = Math.min(frames.length, CONST.MAX_TRACE_TICKS);
-  for (let i = 0; i < n; i++) sim.step(frames[i]);
+  let grabs = 0;
+  for (let i = 0; i < n; i++) {
+    sim.step(frames[i]);
+    const ev = sim.state.events;
+    for (let k = 0; k < ev.length; k++) if (ev[k] === EV_GRAB) grabs++;
+    ev.length = 0;
+  }
   return {
     distance: Math.max(0, -sim.state.bestZ),
+    grabs,
     ticks: n
   };
 }
